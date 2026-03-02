@@ -1,0 +1,3039 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>APPT.COACH</title>
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --brand:       #1a73e8;
+      --brand-deep:  #0d47a1;
+      --brand-light: rgba(26,115,232,.09);
+      --brand-mid:   rgba(26,115,232,.18);
+      --bg:          #f5f6fa;
+      --card:        #ffffff;
+      --soft:        #f0f1f5;
+      --border:      #e4e6eb;
+      --text:        #111827;
+      --muted:       #6b7280;
+      --muted2:      #9ca3af;
+      --warn-bg:     #fffbeb;
+      --warn-border: #fde68a;
+      --warn-text:   #78350f;
+      --crit-bg:     #fff0f0;
+      --crit-border: #fca5a5;
+      --crit-text:   #991b1b;
+      --success:     #059669;
+      --danger:      #dc2626;
+      --shadow-sm:   0 2px 8px rgba(17,24,39,.06);
+      --shadow:      0 6px 20px rgba(17,24,39,.09);
+      --shadow-lg:   0 14px 36px rgba(17,24,39,.12);
+      --r-sm: 12px; --r: 18px; --r-lg: 24px;
+    }
+
+    /* ── RESET ── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--text); min-height:100dvh; }
+    textarea,input,select,button { font-size:16px!important; }
+
+    .app { max-width:460px; margin:0 auto; min-height:100dvh; display:flex; flex-direction:column; }
+
+    /* ── SCREEN SYSTEM ── */
+    .screen { display:none; flex:1; flex-direction:column; gap:12px; padding:14px 14px 20px; }
+    .screen.active { display:flex; }
+
+    /* ── SHARED COMPONENTS ── */
+    .card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--shadow-sm); overflow:hidden; }
+    .card-head { padding:11px 14px; background:linear-gradient(180deg,var(--brand-light) 0%,transparent 100%); border-bottom:1px solid var(--border); font-size:12px; font-weight:900; color:var(--brand-deep); letter-spacing:.3px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .card-body { padding:14px; display:flex; flex-direction:column; gap:12px; }
+
+    .btn-primary { width:100%; border:0; border-radius:var(--r-sm); padding:16px 14px; background:var(--brand); color:#fff; font-weight:900; font-size:15px!important; letter-spacing:.2px; box-shadow:var(--shadow); cursor:pointer; transition:transform .1s,box-shadow .1s; }
+    .btn-primary:active { transform:translateY(1px); box-shadow:var(--shadow-sm); }
+    .btn-primary:disabled { opacity:.5; cursor:not-allowed; }
+
+    .btn-ghost { width:100%; border:1px solid var(--border); border-radius:var(--r-sm); padding:14px; background:var(--card); color:#374151; font-weight:800; font-size:14px!important; cursor:pointer; box-shadow:var(--shadow-sm); transition:transform .1s; }
+    .btn-ghost:active { transform:translateY(1px); }
+
+    .btn-pill { border:1px solid var(--border); background:var(--card); border-radius:999px; padding:8px 12px; font-weight:900; font-size:12px!important; color:#374151; cursor:pointer; box-shadow:var(--shadow-sm); white-space:nowrap; transition:transform .1s; }
+    .btn-pill:active { transform:translateY(1px); }
+    .btn-pill:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-pill.primary { background:var(--brand); color:#fff; border-color:var(--brand-mid); }
+    .btn-pill.danger  { background:#dc2626; color:#fff; border-color:#dc2626; }
+
+    .label { font-size:10px; font-weight:950; color:var(--muted); letter-spacing:.8px; text-transform:uppercase; }
+    .helper { font-size:12px; color:var(--muted); font-weight:700; line-height:1.4; }
+
+    .seg { display:flex; gap:8px; }
+    .seg-btn { flex:1; border:1px solid var(--border); background:var(--soft); border-radius:var(--r-sm); padding:12px; font-weight:950; font-size:13px!important; color:#374151; box-shadow:var(--shadow-sm); cursor:pointer; text-align:center; transition:background .15s,border-color .15s,color .15s; }
+    .seg-btn.active { background:var(--brand-light); border-color:var(--brand-mid); color:var(--brand-deep); }
+
+    .footer-micro { text-align:center; font-size:11px; color:var(--muted2); font-weight:700; line-height:1.5; padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+
+    /* ── START SCREEN ── */
+    .hero-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow); padding:16px 16px 14px; }
+    .hero-top { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+    .hero-title { margin:0; font-size:22px; font-weight:980; letter-spacing:.2px; color:var(--brand-deep); }
+    .hero-sub { margin:6px 0 10px; font-size:13px; font-weight:750; color:var(--muted); line-height:1.45; }
+    .hero-meta { font-size:11px; font-weight:850; color:var(--muted2); }
+    .hero-logo-mark { width:44px; height:44px; border-radius:12px; background:var(--brand); color:#fff; font-size:13px; font-weight:980; letter-spacing:.5px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:var(--shadow); }
+
+    /* Persona cards on start screen */
+    .persona-pick-card { background:var(--card); border:1.5px solid var(--border); border-radius:var(--r-sm); padding:12px 14px; display:flex; align-items:center; gap:12px; cursor:pointer; box-shadow:var(--shadow-sm); transition:border-color .2s,box-shadow .2s; }
+    .persona-pick-card:hover { border-color:var(--brand); box-shadow:var(--shadow); }
+    .persona-pick-card.selected { border-color:var(--brand); background:var(--brand-light); }
+    .persona-pick-card.disabled { opacity:.48; cursor:not-allowed; }
+    .persona-pick-card.disabled:hover { border-color:var(--border); box-shadow:var(--shadow-sm); }
+    .pp-emoji { font-size:22px; flex-shrink:0; }
+    .pp-info { flex:1; }
+    .pp-name { font-size:14px; font-weight:900; color:var(--brand-deep); }
+    .pp-meta { font-size:11px; color:var(--muted); margin-top:1px; }
+    .pp-brief { font-size:12px; color:var(--muted); margin-top:3px; line-height:1.35; }
+    .pp-badge { font-size:10px; font-weight:800; padding:2px 8px; border-radius:20px; white-space:nowrap; }
+    .badge-ready { background:#e8f7ed; color:#1a6b3a; }
+    .badge-soon  { background:var(--soft); color:var(--muted); }
+
+    /* ── BRIEF SCREEN ── */
+    #screen-brief { padding:0; gap:0; }
+    .brief-hero { background:var(--brand-deep); padding:30px 18px 24px; text-align:center; color:#fff; }
+    .brief-emoji { font-size:40px; margin-bottom:10px; }
+    .brief-name  { font-size:20px; font-weight:980; }
+    .brief-meta  { font-size:13px; color:#AACCEE; margin-top:3px; }
+    .brief-body  { padding:14px; display:flex; flex-direction:column; gap:12px; flex:1; }
+    .brief-section { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:14px; box-shadow:var(--shadow-sm); }
+    .brief-section h3 { font-size:11px; font-weight:950; color:var(--brand-deep); text-transform:uppercase; letter-spacing:.6px; margin:0 0 8px; }
+    .brief-section p  { font-size:13px; line-height:1.6; color:var(--text); margin:0; }
+    .brief-reminder { background:var(--warn-bg); border:1px solid var(--warn-border); border-radius:var(--r-sm); padding:10px 12px; font-size:12px; color:var(--warn-text); line-height:1.5; font-weight:750; }
+
+    /* ── PRACTICE SCREEN ── */
+    #screen-practice { padding:0; gap:0; }
+
+    .practice-topbar { position:sticky; top:0; z-index:50; background:rgba(245,246,250,.96); backdrop-filter:blur(8px); border-bottom:1px solid var(--border); padding:10px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .topbar-left { min-width:0; flex:1; }
+    .topbar-persona { font-weight:950; font-size:13px; color:var(--brand-deep); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .topbar-meta    { font-size:11px; font-weight:800; color:var(--muted); }
+    .topbar-right   { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+
+    /* Voice toggle button */
+    #voice-btn {
+      width:34px; height:34px; border-radius:50%;
+      border:1.5px solid var(--border);
+      background:var(--card);
+      font-size:16px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      box-shadow:var(--shadow-sm);
+      transition:background .15s, border-color .15s, opacity .15s;
+      -webkit-tap-highlight-color:transparent;
+      flex-shrink:0;
+    }
+    #voice-btn:active { transform:scale(.92); }
+    #voice-btn.active {
+      background:var(--brand-light);
+      border-color:var(--brand-mid);
+    }
+    #voice-btn.muted {
+      opacity:.45;
+    }
+    /* Speaking pulse on prospect bubble */
+    .bubble.speaking {
+      box-shadow:0 0 0 2px var(--brand-mid), var(--shadow-sm);
+      animation:bubble-speak .9s ease-in-out infinite alternate;
+    }
+    @keyframes bubble-speak {
+      from { box-shadow:0 0 0 2px var(--brand-mid), var(--shadow-sm); }
+      to   { box-shadow:0 0 0 4px rgba(26,115,232,.22), var(--shadow-sm); }
+    }
+
+    .chat-panel { margin:10px 14px 0; background:var(--card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--shadow-sm); overflow:hidden; display:flex; flex-direction:column; min-height:52vh; }
+    .chat-panel-head { padding:9px 12px; background:linear-gradient(180deg,var(--brand-light),transparent); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .chat-panel-label { font-size:11px; font-weight:950; color:var(--brand-deep); letter-spacing:.3px; }
+    #stage-label { font-size:11px; font-weight:900; color:var(--muted); }
+
+    #chat-messages { flex:1; padding:12px 12px 10px; overflow-y:auto; -webkit-overflow-scrolling:touch; background:var(--bg); }
+
+    .bubble-row { display:flex; margin:7px 0; }
+    .bubble-row.left  { justify-content:flex-start; }
+    .bubble-row.right { justify-content:flex-end; }
+    .bubble { max-width:82%; padding:10px 12px; border-radius:16px; font-size:15px; line-height:1.4; box-shadow:var(--shadow-sm); border:1px solid var(--border); word-break:break-word; }
+    .bubble-tag { display:block; font-size:10.5px; font-weight:950; color:rgba(17,24,39,.45); margin-bottom:4px; letter-spacing:.2px; }
+    .bubble.prospect { background:var(--card); border-top-left-radius:6px; }
+    .bubble.user { background:var(--brand-light); border-color:var(--brand-mid); color:#0b2453; border-top-right-radius:6px; }
+
+    /* Calling overlay */
+    .calling-overlay {
+      position:fixed; inset:0; z-index:300;
+      background:rgba(17,24,39,.82);
+      backdrop-filter:blur(6px);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      gap:18px;
+      opacity:0; pointer-events:none;
+      transition:opacity .25s;
+    }
+    .calling-overlay.visible { opacity:1; pointer-events:all; }
+    .calling-avatar {
+      width:80px; height:80px; border-radius:50%;
+      background:var(--brand); color:#fff;
+      font-size:36px;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 0 0 0 rgba(26,115,232,.5);
+      animation:ring-pulse 1.4s ease-out infinite;
+    }
+    @keyframes ring-pulse {
+      0%   { box-shadow:0 0 0 0 rgba(26,115,232,.55); }
+      70%  { box-shadow:0 0 0 22px rgba(26,115,232,0); }
+      100% { box-shadow:0 0 0 0 rgba(26,115,232,0); }
+    }
+    .calling-name  { font-size:20px; font-weight:950; color:#fff; }
+    .calling-status{ font-size:13px; font-weight:800; color:rgba(255,255,255,.6); letter-spacing:.3px; }
+
+    /* Warmth bar */
+
+    /* Hint bar — foundation mode */
+    .hint-bar { margin:4px 14px 0; display:flex; align-items:flex-start; gap:8px; padding:9px 11px; background:var(--warn-bg); border:1px solid var(--warn-border); border-radius:var(--r-sm); font-size:12.5px; font-weight:900; color:var(--warn-text); min-height:38px; }
+    .hint-dot { width:8px; height:8px; border-radius:99px; background:#f59e0b; flex-shrink:0; margin-top:3px; }
+    #hint-text { flex:1; line-height:1.4; }
+    .hint-bar.hidden { display:none; }
+
+    /* Hint ? button */
+    #hint-more-btn {
+      flex-shrink:0;
+      width:22px; height:22px;
+      border-radius:50%;
+      border:1.5px solid var(--warn-border);
+      background:rgba(245,158,11,.15);
+      color:var(--warn-text);
+      font-size:12px; font-weight:900;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      margin-top:0;
+      -webkit-tap-highlight-color:transparent;
+      transition:background .15s;
+    }
+    #hint-more-btn:active { background:rgba(245,158,11,.3); }
+
+    /* Coaching bottom sheet */
+    .coaching-backdrop {
+      position:fixed; inset:0; z-index:200;
+      background:rgba(17,24,39,.45);
+      opacity:0; pointer-events:none;
+      transition:opacity .22s;
+    }
+    .coaching-backdrop.open { opacity:1; pointer-events:all; }
+
+    .coaching-sheet {
+      position:fixed; bottom:0; left:0; right:0; z-index:201;
+      background:var(--card);
+      border-top-left-radius:20px;
+      border-top-right-radius:20px;
+      box-shadow:0 -4px 24px rgba(17,24,39,.14);
+      max-height:72vh;
+      display:flex; flex-direction:column;
+      transform:translateY(100%);
+      transition:transform .26s cubic-bezier(.32,0,.15,1);
+    }
+    .coaching-sheet.open { transform:translateY(0); }
+
+    .coaching-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px 10px;
+      border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+    .coaching-stage {
+      font-size:13px; font-weight:950; color:var(--brand-deep);
+      letter-spacing:.2px;
+    }
+    .coaching-close {
+      width:28px; height:28px; border-radius:50%;
+      border:1.5px solid var(--border);
+      background:var(--soft);
+      font-size:13px; color:var(--muted);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .coaching-scroll {
+      overflow-y:auto; -webkit-overflow-scrolling:touch;
+      padding:14px 16px calc(20px + env(safe-area-inset-bottom));
+      display:flex; flex-direction:column; gap:16px;
+    }
+    .coaching-section { display:flex; flex-direction:column; gap:6px; }
+    .coaching-label {
+      font-size:10.5px; font-weight:950; color:var(--muted);
+      text-transform:uppercase; letter-spacing:.5px;
+    }
+    .coaching-body {
+      font-size:13.5px; font-weight:700; color:var(--text);
+      line-height:1.55;
+    }
+    .coaching-example {
+      background:var(--brand-light);
+      border:1px solid var(--brand-mid);
+      border-left:3px solid var(--brand);
+      border-radius:var(--r-sm);
+      padding:10px 12px;
+      font-size:13px; font-weight:800;
+      color:#0b2453;
+      line-height:1.5;
+      margin-bottom:6px;
+    }
+    .coaching-avoid {
+      color:#b45309;
+    }
+    .coaching-avoid-wrap {
+      background:rgba(251,191,36,.08);
+      border:1px solid rgba(251,191,36,.25);
+      border-radius:var(--r-sm);
+      padding:10px 12px;
+    }
+
+    /* Critical alert bar */
+    .crit-bar { margin:4px 14px 0; display:flex; align-items:flex-start; gap:8px; padding:9px 11px; background:var(--crit-bg); border:1px solid var(--crit-border); border-radius:var(--r-sm); font-size:12.5px; font-weight:900; color:var(--crit-text); min-height:38px; display:none; }
+    .crit-dot { width:8px; height:8px; border-radius:99px; background:#ef4444; flex-shrink:0; margin-top:3px; }
+    #crit-text { flex:1; line-height:1.4; }
+
+    /* Composer */
+    .composer { position:sticky; bottom:0; z-index:60; background:linear-gradient(180deg,rgba(245,246,250,0),rgba(245,246,250,1) 30%); padding:10px 14px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid rgba(228,230,235,.5); }
+    .composer-row { display:flex; gap:8px; align-items:flex-end; }
+    .input-box { flex:1; background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow-sm); padding:10px 10px; }
+    #msg-input { width:100%; border:0; outline:0; resize:none; background:transparent; font-weight:800; color:var(--text); max-height:110px; line-height:1.35; }
+
+    /* Mic button */
+    #mic-btn {
+      flex-shrink:0;
+      width:42px; height:42px;
+      border-radius:50%;
+      border:1.5px solid var(--border);
+      background:var(--card);
+      color:var(--muted);
+      font-size:18px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      box-shadow:var(--shadow-sm);
+      transition:background .18s, border-color .18s, color .18s, box-shadow .18s;
+      position:relative;
+      -webkit-tap-highlight-color:transparent;
+    }
+    #mic-btn:active { transform:scale(.93); }
+    #mic-btn.listening {
+      background:#dc2626;
+      border-color:#dc2626;
+      color:#fff;
+      box-shadow:0 0 0 0 rgba(220,38,38,.55);
+      animation:mic-pulse 1.4s ease-out infinite;
+    }
+    #mic-btn.unsupported { display:none; }
+    #mic-btn.denied {
+      background:var(--soft);
+      border-color:var(--border);
+      color:#9ca3af;
+      cursor:not-allowed;
+    }
+    @keyframes mic-pulse {
+      0%   { box-shadow:0 0 0 0 rgba(220,38,38,.55); }
+      70%  { box-shadow:0 0 0 11px rgba(220,38,38,0); }
+      100% { box-shadow:0 0 0 0 rgba(220,38,38,0); }
+    }
+
+    /* Interim transcript text style in input */
+    #msg-input.mic-interim { color:var(--muted); font-style:italic; }
+
+    /* Mic status strip */
+    #mic-status {
+      display:none;
+      align-items:center;
+      gap:6px;
+      margin-top:6px;
+      font-size:11.5px;
+      font-weight:800;
+      color:var(--muted);
+      padding:0 2px;
+    }
+    #mic-status.visible { display:flex; }
+    #mic-status-dot {
+      width:7px; height:7px; border-radius:50%;
+      background:#dc2626;
+      animation:mic-pulse-dot 1.2s ease-in-out infinite;
+      flex-shrink:0;
+    }
+    @keyframes mic-pulse-dot {
+      0%,100% { opacity:1; } 50% { opacity:.3; }
+    }
+
+    /* ── RESULT SCREEN ── */
+    .result-hero { text-align:center; padding:8px 0 4px; }
+    .result-icon  { font-size:40px; margin-bottom:6px; }
+    .result-title { font-size:22px; font-weight:980; color:var(--brand-deep); margin:0; }
+    .result-sub   { font-size:13px; font-weight:800; color:var(--muted); margin:6px 0 0; }
+
+    .breakdown-list { display:flex; flex-direction:column; gap:8px; }
+    .breakdown-row { display:flex; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--border); border-radius:var(--r-sm); padding:10px 12px; background:var(--card); box-shadow:var(--shadow-sm); }
+    .breakdown-row .k { font-weight:900; color:#1f2937; font-size:13px; }
+    .breakdown-row .v { font-weight:950; color:var(--text); font-size:13px; white-space:nowrap; }
+
+    .coach-summary { background:var(--warn-bg); border:1px solid var(--warn-border); border-radius:var(--r-sm); padding:11px 13px; font-size:13px; font-weight:850; color:var(--warn-text); line-height:1.5; box-shadow:var(--shadow-sm); }
+    .tip-box-result { background:#eaf2ff; border:1px solid #aaccee; border-left:4px solid var(--brand-deep); border-radius:var(--r-sm); padding:13px 14px; font-size:13px; font-weight:850; color:var(--brand-deep); line-height:1.55; }
+    .debrief-loading { display:flex; flex-direction:column; align-items:center; gap:12px; padding:28px 0; }
+    .debrief-spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--brand); border-radius:50%; animation:spin 0.8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .debrief-loading-text { font-size:13px; font-weight:750; color:var(--muted); }
+    .debrief-list { margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px; }
+    .debrief-list li { font-size:13px; font-weight:750; color:var(--text); line-height:1.5; }
+    .moment-card { border:1px solid var(--border); border-radius:var(--r-sm); overflow:hidden; margin-bottom:10px; box-shadow:var(--shadow-sm); }
+    .moment-card:last-child { margin-bottom:0; }
+    .moment-turn { background:var(--soft); padding:9px 12px; font-size:12px; font-weight:900; color:var(--brand-deep); border-bottom:1px solid var(--border); }
+    .moment-body { padding:10px 12px; display:flex; flex-direction:column; gap:7px; }
+    .moment-row { font-size:12px; line-height:1.5; font-weight:750; }
+    .moment-label { font-weight:950; color:var(--brand-deep); font-size:11px; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:2px; }
+    .moment-better { background:#f0fdf4; border:1px solid #86efac; border-radius:6px; padding:8px 10px; }
+    .moment-better .moment-label { color:#15803d; }
+
+    .result-actions { display:flex; flex-direction:column; gap:10px; }
+
+    /* Transcript */
+    .tr-toggle { text-align:center; font-size:12px; color:var(--brand); font-weight:800; cursor:pointer; padding:4px; text-decoration:underline; }
+    .tr-box { background:var(--soft); border-radius:var(--r-sm); padding:10px 12px; max-height:260px; overflow-y:auto; font-size:12px; line-height:1.6; color:var(--muted); display:none; margin-top:6px; }
+    .tr-box.open { display:block; }
+    .tr-line { margin-bottom:5px; }
+    .tr-rep  { color:var(--brand-deep); font-weight:800; }
+    .tr-pro  { color:#059669; font-weight:800; }
+
+    /* ── TIPS MODAL ── */
+    .modal-backdrop { position:fixed; inset:0; background:rgba(17,24,39,.55); z-index:200; display:none; }
+    .modal-backdrop.open { display:block; }
+    .tips-modal { position:fixed; inset:0; z-index:201; display:none; flex-direction:column; background:var(--bg); }
+    .tips-modal.open { display:flex; }
+    .tips-topbar { position:sticky; top:0; background:var(--card); border-bottom:1px solid var(--border); padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-shrink:0; }
+    .tips-title { font-size:15px; font-weight:980; color:var(--brand-deep); margin:0; }
+    .tips-scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:14px 14px 40px; }
+    .tips-card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--shadow-sm); padding:14px; }
+    .tips-body { white-space:pre-wrap; font-size:14px; line-height:1.6; font-weight:650; color:var(--text); }
+
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══════════════════════════════════
+       START SCREEN
+  ══════════════════════════════════ -->
+  <div id="screen-start" class="screen active">
+
+    <div class="hero-card">
+      <div class="hero-top">
+        <div>
+          <h1 class="hero-title">APPT.COACH</h1>
+          <p class="hero-sub">Practice booking a 15-min appointment — fast, realistic, no guesswork.</p>
+          <div class="hero-meta">v2026.02 · Ethan update</div>
+        </div>
+        <div class="hero-logo-mark">AC</div>
+      </div>
+    </div>
+
+    <!-- Persona Selection -->
+    <div class="card">
+      <div class="card-head">
+        Choose your prospect
+        <button class="btn-pill" onclick="UI.openTips('howto')">ⓘ How it works</button>
+      </div>
+      <div class="card-body">
+
+        <div id="persona-ethan" class="persona-pick-card selected" onclick="UI.selectPersona('ethan')">
+          <div class="pp-emoji">👨‍💻</div>
+          <div class="pp-info">
+            <div class="pp-name">Ethan</div>
+            <div class="pp-meta">24 · Junior Engineer</div>
+            <div class="pp-brief">Fresh into the workforce. Not sure financial planning is relevant to him yet.</div>
+          </div>
+          <div class="pp-badge badge-ready">Ready</div>
+        </div>
+
+        <div class="persona-pick-card disabled">
+          <div class="pp-emoji">👩‍💼</div>
+          <div class="pp-info">
+            <div class="pp-name">Wei Ting</div>
+            <div class="pp-meta">31 · Project Manager</div>
+            <div class="pp-brief">Building stage. BTO queue. Makes decisions with her partner.</div>
+          </div>
+          <div class="pp-badge badge-soon">Coming soon</div>
+        </div>
+
+        <div class="persona-pick-card disabled">
+          <div class="pp-emoji">👩‍👧‍👦</div>
+          <div class="pp-info">
+            <div class="pp-name">Linda</div>
+            <div class="pp-meta">42 · Homemaker</div>
+            <div class="pp-brief">Two school-age children. Husband runs a business.</div>
+          </div>
+          <div class="pp-badge badge-soon">Coming soon</div>
+        </div>
+
+        <div class="persona-pick-card disabled">
+          <div class="pp-emoji">👨‍💼</div>
+          <div class="pp-info">
+            <div class="pp-name">Patrick</div>
+            <div class="pp-meta">55 · Senior Manager</div>
+            <div class="pp-brief">Nearing retirement. Has dealt with financial advisers before.</div>
+          </div>
+          <div class="pp-badge badge-soon">Coming soon</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode Selection -->
+    <div class="card">
+      <div class="card-head">
+        Practice mode
+        <button class="btn-pill" onclick="UI.openTips('modes')" style="font-size:11px!important;">ⓘ</button>
+      </div>
+      <div class="card-body">
+        <div class="seg">
+          <div class="seg-btn active" id="seg-foundation" onclick="UI.setMode('foundation')">Foundation</div>
+          <div class="seg-btn" id="seg-advanced" onclick="UI.setMode('advanced')">Advanced</div>
+        </div>
+        <div class="helper" id="mode-helper">Coaching hints shown after each reply. Best for learning how to handle each situation.</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="UI.goToBrief()">Continue →</button>
+
+    <div class="footer-micro">APPT.COACH · Training tool</div>
+
+  </div><!-- end screen-start -->
+
+
+  <!-- ══════════════════════════════════
+       BRIEF SCREEN
+  ══════════════════════════════════ -->
+  <div id="screen-brief" class="screen">
+
+    <div class="brief-hero">
+      <div class="brief-emoji" id="brief-emoji">👨‍💻</div>
+      <div class="brief-name" id="brief-name">Ethan</div>
+      <div class="brief-meta" id="brief-meta">24 · Junior Engineer</div>
+    </div>
+
+    <div class="brief-body">
+      <div class="brief-section">
+        <h3>About this prospect</h3>
+        <p id="brief-about">Ethan is fresh into the workforce and lives with his parents. He has a job, some savings, and company insurance — and he thinks that is enough for now. Financial planning feels like something for people with families or mortgages. Not him. Not yet.</p>
+      </div>
+      <div class="brief-section">
+        <h3>What to expect</h3>
+        <p id="brief-expect">He picks up but may want to end the call fast. Give him one good reason to stay on the line. He responds to language that connects to where he actually is right now — not where he will be in 30 years.</p>
+      </div>
+      <div class="brief-reminder">💡 Your only goal: book a short 15-minute meeting. Not to explain everything — just to get the meeting.</div>
+
+      <button class="btn-primary" onclick="UI.startSession()">Start Call</button>
+      <button class="btn-ghost" onclick="UI.backToStart()">← Back</button>
+    </div>
+
+  </div><!-- end screen-brief -->
+
+
+  <!-- ══════════════════════════════════
+       PRACTICE SCREEN
+  ══════════════════════════════════ -->
+  <div id="screen-practice" class="screen">
+
+    <div class="practice-topbar">
+      <div class="topbar-left">
+        <div class="topbar-persona" id="topbar-persona">Ethan · 24 · Junior Engineer</div>
+        <div class="topbar-meta"    id="topbar-meta">Foundation · Turn 1</div>
+      </div>
+      <div class="topbar-right">
+        <button id="voice-btn" onclick="UI.toggleVoice()" title="Toggle Ethan's voice" class="active">🔊</button>
+        <button class="btn-pill danger" onclick="UI.endSession()">End</button>
+      </div>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel">
+      <div class="chat-panel-head">
+        <div class="chat-panel-label">Live Simulation</div>
+        <div id="stage-label">State 1 — Opening</div>
+      </div>
+      <div id="chat-messages"></div>
+    </div>
+
+    <!-- Hint Bar (foundation mode only) -->
+    <div class="hint-bar" id="hint-bar">
+      <div class="hint-dot"></div>
+      <div id="hint-text">Introduce yourself, give a brief reason for calling, and ask for 20 seconds.</div>
+      <button id="hint-more-btn" onclick="UI.openCoachingCard()" title="Why this matters and what to avoid">?</button>
+    </div>
+
+    <!-- Critical Alert Bar (always shown when triggered) -->
+    <div class="crit-bar" id="crit-bar">
+      <div class="crit-dot"></div>
+      <div id="crit-text"></div>
+    </div>
+
+    <!-- Composer -->
+    <div class="composer">
+      <div class="composer-row">
+        <button id="mic-btn" onclick="UI.toggleMic()" title="Toggle microphone">🎤</button>
+        <div class="input-box">
+          <textarea id="msg-input" rows="1" placeholder="Type your line…"></textarea>
+        </div>
+        <button class="btn-pill primary" id="send-btn" disabled onclick="UI.sendMessage()">Send</button>
+      </div>
+      <div id="mic-status">
+        <div id="mic-status-dot"></div>
+        <span id="mic-status-text">Listening — speak your line</span>
+      </div>
+      <div class="footer-micro" style="margin-top:6px;">APPT.COACH · Training tool</div>
+    </div>
+
+  </div><!-- end screen-practice -->
+
+
+  <!-- ══════════════════════════════════
+       RESULT SCREEN
+  ══════════════════════════════════ -->
+  <div id="screen-result" class="screen">
+
+    <div class="result-hero">
+      <div class="result-icon" id="result-icon">—</div>
+      <h2 class="result-title" id="result-title">—</h2>
+      <div class="result-sub"  id="result-sub">—</div>
+    </div>
+
+    <!-- AI debrief loading state -->
+    <div id="debrief-loading" class="debrief-loading" style="display:none;">
+      <div class="debrief-spinner"></div>
+      <div class="debrief-loading-text">Analysing your call…</div>
+    </div>
+
+    <!-- AI debrief content -->
+    <div id="debrief-content" style="display:none;">
+
+      <div class="card">
+        <div class="card-head">How the call went</div>
+        <div class="card-body">
+          <div class="coach-summary" id="debrief-summary">—</div>
+        </div>
+      </div>
+
+      <div class="card" id="debrief-strengths-card" style="display:none;">
+        <div class="card-head">✅ What you did well</div>
+        <div class="card-body">
+          <ul class="debrief-list" id="debrief-strengths"></ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">🔍 Turn-by-turn breakdown</div>
+        <div class="card-body" id="debrief-moments"></div>
+      </div>
+
+      <div class="card" id="debrief-improvements-card" style="display:none;">
+        <div class="card-head">📈 What to work on</div>
+        <div class="card-body">
+          <ul class="debrief-list" id="debrief-improvements"></ul>
+        </div>
+      </div>
+
+      <div class="tip-box-result" id="debrief-tip">—</div>
+
+    </div>
+
+    <!-- Fallback debrief (if AI fails) -->
+    <div id="debrief-fallback" style="display:none;">
+      <div class="card">
+        <div class="card-head">How the call went</div>
+        <div class="card-body">
+          <div class="coach-summary" id="coach-read">—</div>
+        </div>
+      </div>
+      <div class="tip-box-result" id="coach-tip">—</div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">Full transcript</div>
+      <div class="card-body" style="gap:6px;">
+        <div class="tr-toggle" onclick="UI.toggleTranscript()">Show transcript ▾</div>
+        <div class="tr-box" id="tr-box"></div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-primary" onclick="UI.retrySession()">Try Again</button>
+      <button class="btn-ghost"   onclick="UI.downloadPDF()">⬇ Download Report (PDF)</button>
+      <button class="btn-ghost"   onclick="UI.backToStart()">Back to Setup</button>
+    </div>
+
+    <div class="footer-micro">APPT.COACH · Training tool</div>
+
+  </div><!-- end screen-result -->
+
+</div><!-- end .app -->
+
+<!-- Calling overlay -->
+<div class="calling-overlay" id="calling-overlay">
+  <div class="calling-avatar" id="calling-avatar">👨‍💻</div>
+  <div class="calling-name"   id="calling-name">Ethan</div>
+  <div class="calling-status" id="calling-status">Calling…</div>
+</div>
+
+<!-- Coaching card bottom sheet -->
+<div class="coaching-backdrop" id="coaching-backdrop" onclick="UI.closeCoachingCard()"></div>
+<div class="coaching-sheet" id="coaching-sheet">
+  <div class="coaching-header">
+    <div class="coaching-stage" id="coaching-stage">Introducing yourself</div>
+    <button class="coaching-close" onclick="UI.closeCoachingCard()">✕</button>
+  </div>
+  <div class="coaching-scroll">
+    <div class="coaching-section">
+      <div class="coaching-label">What Ethan needs</div>
+      <div class="coaching-body" id="coaching-principle"></div>
+    </div>
+    <div class="coaching-section">
+      <div class="coaching-label">Why it matters</div>
+      <div class="coaching-body" id="coaching-why"></div>
+    </div>
+    <div class="coaching-section coaching-avoid-wrap">
+      <div class="coaching-label">Avoid</div>
+      <div class="coaching-body coaching-avoid" id="coaching-avoid"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     TIPS MODAL
+══════════════════════════════════ -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="UI.closeTips()"></div>
+<div class="tips-modal" id="tips-modal">
+  <div class="tips-topbar">
+    <h3 class="tips-title" id="tips-title">Info</h3>
+    <button class="btn-pill" onclick="UI.closeTips()">Close</button>
+  </div>
+  <div class="tips-scroll">
+    <div class="tips-card">
+      <div class="tips-body" id="tips-body"></div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+/* ================================================================
+   APPT.COACH v5 — Ethan Engine
+   Three strict layers:
+     1. DATA    — reply pools, debrief content, tips text
+     2. ENGINE  — intent detection, warmth, turn logic
+     3. UI      — DOM only, no logic
+================================================================ */
+
+/* ── UTILITIES ── */
+var _pick    = function(a){ return a[Math.floor(Math.random()*a.length)]; };
+var _pickNo  = function(a,l){ if(!a||!a.length)return"..."; if(a.length===1)return a[0]; var f=a.filter(function(x){return x!==l;}); return _pick(f.length?f:a); };
+var _any     = function(s,ph){ for(var i=0;i<ph.length;i++)if(s.indexOf(ph[i])>=0)return true; return false; };
+var _clean   = function(t){ return t.toLowerCase().replace(/[''""]/g,"'").replace(/[^\w\s'.!?-]/g," ").replace(/\s+/g," ").trim(); };
+
+/* ================================================================
+   LAYER 1 — DATA
+================================================================ */
+
+/* ── REPLY POOLS ── */
+var POOLS = {
+  s1_rushed:    ["Yeah what is it.","Yah who is this.","Hello. What do you want.","Make it quick."],
+  s1_neutral:   ["Hello, who is this?","Yah speaking. What is it?","Who are you?","Yes? What's this about?"],
+  s1_distracted:["Mm? Hello?","Yah... one sec. Ok what.","Hello?","Yah?"],
+  p2_entry:     ["Yes? What's this about?","Yah speaking. What is it?","Ok, go on.","Mm. What is it?","Yah, ok. What?","Ok, and?"],
+  s1_bad:       ["Not interested. Bye.","I'm going to stop you there.","Please don't call me again.","Not what I need right now."],
+  s1_weak:      ["Who are you again?","What company is this?","Sorry, who is this calling?","Didn't catch your name.","Yah? Who is calling?","I did not catch that — who are you?","Which company is this?"],
+  s2_hooked:    ["What do you mean exactly?","Hm. My company insurance not enough meh?","What is it that you're checking?","Ok... so what does that involve?"],
+  s2_flat:      ["Not interested, thanks.","I don't really need this lah.","Can just WhatsApp me?","I'm fine already."],
+  s2_bad:       ["This is a sales call. Not interested.","You're trying to sell me something.","Sounds like a pitch. I'm hanging up.","Not interested in products."],
+  s2_noObs:     ["Sorry, what exactly is this about?","I'm not sure what you're asking.","Can you tell me more about why you're calling?","What's the point of this call?"],
+  s2_noQ:       ["Ok... so what do you want from me?","Right. And what does that have to do with me?","Sure. What's your question?","Ok, I'm listening. What is it you want?"],
+  obj_inject:   ["I'm still young, no rush for this lah.","At my age no need to think so far ahead.","I just started working, still figuring things out.","Too early lah, can do this later."],
+  obj_early:    ["Not interested, thanks.","I don't think I need this.","Not for me.","No thanks.","Aiya no need lah.","Ok busy right now.","Maybe another time.","I'm quite tied up actually.","Yah I'm good, no need.","Nah I'm fine."],
+  pi_window:    ["Ok, go ahead then.","Fine, what is it.","Ok. But make it quick.","Alright, say what you want to say.","Yah ok what?","Fine. 10 seconds.","Ok lah, say it.","Alright, I'm listening.","Go ahead, quickly.","Ok what is it?"],
+  pi_missed:    ["Yah ok. Can WhatsApp me the details?","I'll think about it lah.","Mm... not really keen.","Maybe next time."],
+  pi_ignored:   ["Aiya no need lah.","I said not interested already.","Ok bye.","Don't need, thanks."],
+  s3_needsAck:  ["I don't feel like you're listening.","You haven't acknowledged what I said.","Did you hear what I said?","I said I'm young — that's my point."],
+  s3_needsRfm:  ["Ok... so then what are you suggesting?","And why does that matter for me now?","I hear you, but what's your point for someone my age?","Ok, I get what you're saying. What do you actually want?","Ok lah, what is it?","So what are you getting at?","And this affects me how?","Yah ok, what do you want me to do about it?","Get to the point lah."],
+  s3_handled:   ["Hmm... ok I never thought of it that way.","15 minutes only ah?","Ok lah, maybe can consider.","Aiya fine. Saturday morning can."],
+  s3_lectured:  ["Yah yah I know. Maybe next time lah.","Ok I'll think about it.","Don't need to explain so much.","Aiya later lah."],
+  s3_noAsk:     ["Ok... so what are you suggesting?","And then what?","Ok. What do you want me to do?","Right. So what's the next step?","So what does this involve?","What exactly are you proposing?","Ok lah. So what happens next?","What step do you want me to take?"],
+  s3_cleared:   ["Ok, and how long would this take?","Alright. What exactly would we cover?","Fine. So when are you thinking?","Ok lah. How does this work?"],
+  s3_wrongLang: ["Mm... not sure this is relevant to me.","I don't really have those kind of concerns yet.","Aiya not applicable lah.","I'll think about it."],
+  s3_exit:      ["Not interested. Goodbye.","I said no thanks.","Please don't call me again.","I'm hanging up now."],
+  s4_accept:    ["Ok lah. Saturday morning can.","Fine. Tuesday 8pm.","Aiya ok. Saturday.","Ok ok. Tuesday then.","Saturday can lah.","Fine. Tuesday evening.","Ok lah, Saturday morning. 15 minutes only ah.","Alright. Tuesday 8pm works.","Ok, I will put it in. Saturday morning.","Fine, let's do Tuesday."],
+  s4_condition: ["WhatsApp me first lah then I confirm.","Ok but keep it to 15 minutes ah.","Can. But don't be late.","Saturday can. But really 15 minutes only."],
+  s4_delay:     ["I'll think about it lah.","Maybe next time.","Can WhatsApp me? I'll get back to you.","Let me check first."],
+  s4_noTimebox: ["How long would this take exactly?","What kind of time commitment are we talking?","How long is this meeting?","Wait — how long is this going to be?","Eh how long ah?","Can you give me a time frame?","How many minutes are we talking?","I need to know how long before I commit."],
+  s4_noOptions: ["When exactly are you thinking?","Give me some options.","What time did you have in mind?","Can you be more specific?","Any other time options?","What's the other option?"],
+  s4_oneOption:  ["Any other timing that works?","Give me one more option.","What's the other time you had in mind?","Can you suggest another slot?"],
+  hard_reject:  ["Not interested. Please don't call again.","I'm going to hang up now.","This is not going anywhere. Goodbye.","Don't call this number again."]
+};
+
+/* ================================================================
+   GEMINI AI LAYER
+================================================================ */
+var GEMINI_URL = "https://apptcoach-proxy.alvin048302.workers.dev/";
+
+/* Ethan's character brief — sent with every turn */
+var ETHAN_BRIEF = "You are Ethan, a 24-year-old software engineer, 1 year into your first job. You live with your parents. You have company group insurance and assume it's enough. Financial planning feels like something for people with families or mortgages — not relevant to you yet. You speak in plain, natural English — complete sentences, conversational tone. NEVER use Singlish, slang, or filler words like 'lah', 'leh', 'aiya', 'nah', 'yah', 'can', 'lor'. You are not rude but you are busy and mildly sceptical on cold calls.";
+
+var ETHAN_RULES = "RULES:\n" +
+  "1. Reply in plain English only — complete sentences, natural conversational tone. NEVER use Singlish or any slang.\n" +
+  "2. React SPECIFICALLY to what the rep just said — address their actual words or point.\n" +
+  "3. NEVER agree to a meeting unless the rep said: a low-commitment framing + '15 minutes' + two specific time options (e.g. 'Saturday morning or Tuesday evening').\n" +
+  "4. If the rep used jargon like 'retirement', 'dependants', 'estate planning' — say it sounds irrelevant to you right now.\n" +
+  "5. If the rep made a point that actually relates to your situation (e.g. company insurance gaps, switching jobs) — soften slightly but stay non-committal.\n" +
+  "6. If the rep asked for a meeting but gave no duration or time options — ask how long it takes or when they had in mind.\n" +
+  "7. Keep replies to 2-3 sentences maximum. Speak like a real person, not a chatbot.";
+
+/* Situation labels passed to Gemini so it knows what state the call is in */
+function _situationLabel(phase, state){
+  if(phase===1) return "You just picked up the phone. You don't know who this is yet. React to their opener — who they are, why they're calling.";
+  if(state==="EARLY_EXIT") return "You want to end the call. You've already said you're not interested or busy. The rep is trying to keep you on. React to what they just said — either give them one more moment if they asked well, or push to end the call.";
+  if(state==="PI_WINDOW") return "The rep asked for just one more moment and you gave it. You're listening briefly but the clock is ticking. React specifically to what they say — if they give a good reason and ask for a meeting with a timebox and two options, you can agree. Otherwise stay non-committal.";
+  if(state==="ACK") return "You raised a concern (like being too young, not needing this, or being busy) and the rep hasn't properly acknowledged it yet. React to show you want to feel heard before they continue.";
+  if(state==="REFRAME") return "The rep acknowledged your concern. Now they're trying to reframe the meeting as low-commitment. React to what they actually said — if they gave a clear timebox and two time options, you can agree. If vague, push back mildly.";
+  if(phase===2) return "You gave the rep a moment to talk. You're listening but not convinced. React to what they said — if it sounds relevant to your life, stay on. If it sounds like a pitch or generic, show mild impatience.";
+  if(phase===4) return "The rep is making their final meeting ask. React based on whether they gave a timebox and two specific time options.";
+  return "You are on a cold call. React naturally to what the rep just said.";
+}
+
+/* Build conversation history for Gemini — excludes current turn (not yet in transcript) */
+function _buildHistory(){
+  var lines = [];
+  (_S.transcript||[]).forEach(function(t){
+    if(t.role==="rep") lines.push("Rep: " + t.text);
+    else lines.push("Ethan: " + t.text);
+  });
+  return lines.join("\n");
+}
+
+/* Build history explicitly stopping before the last rep turn (for use in _doTurnAsync) */
+function _buildHistoryForReply(){
+  var lines = [];
+  var turns = (_S.transcript||[]);
+  // Find last rep entry — exclude it since it's passed separately as repText
+  var lastRepIdx = -1;
+  for(var i=turns.length-1;i>=0;i--){ if(turns[i].role==="rep"){ lastRepIdx=i; break; } }
+  turns.forEach(function(t,i){
+    if(i===lastRepIdx) return; // skip — passed as repText
+    if(t.role==="rep") lines.push("Rep: " + t.text);
+    else lines.push("Ethan: " + t.text);
+  });
+  return lines.join("\n");
+}
+
+/* Call Gemini for Ethan's reply */
+async function _geminiReply(situation, repText){
+  var history = _buildHistoryForReply();
+  var prompt =
+    "CHARACTER:\n" + ETHAN_BRIEF + "\n\n" +
+    ETHAN_RULES + "\n\n" +
+    "SITUATION: " + situation + "\n\n" +
+    (history ? "CONVERSATION SO FAR:\n" + history + "\n\n" : "") +
+    "The rep just said: " + repText + "\n\n" +
+    "Reply as Ethan. Do NOT use quotes. Do NOT add a label. Just write what Ethan says.";
+
+  try {
+    var resp = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.75, maxOutputTokens: 300, thinkingConfig: { thinkingBudget: 0 } }
+      })
+    });
+    var data = await resp.json();
+    if(data.candidates && data.candidates[0] && data.candidates[0].content){
+      // Skip thought parts — only take actual reply text
+      var parts = data.candidates[0].content.parts || [];
+      var raw = parts.filter(function(p){ return !p.thought; }).map(function(p){ return p.text||""; }).join("").trim();
+      raw = raw.replace(/^ethan\s*:\s*/i, "").replace(/^["']|["']$/g, "").trim();
+      return raw || null;
+    }
+    return null;
+  } catch(e) {
+    return null;
+  }
+}
+
+/* Call Gemini for comprehensive debrief */
+async function _geminiDebrief(outcome, engineFlags){
+  var history = _buildHistory();
+  var flagSummary = [
+    "Outcome: " + outcome,
+    "Early exit ignored: " + engineFlags.earlyExitIgnored,
+    "Early exit missed: " + engineFlags.earlyExitMissed,
+    "Pitch detected: " + engineFlags.pitchDetected,
+    "Lecture detected: " + engineFlags.lectureDetected,
+    "Wrong language count: " + engineFlags.wrongLangCount,
+    "Total turns: " + engineFlags.turns,
+    "Final warmth: " + engineFlags.warmth
+  ].join("\n");
+
+  var prompt = "You are a cold calling coach. The rep was practicing booking a 15-minute meeting with Ethan, a 24-year-old engineer who is sceptical of cold calls.\n\n" +
+    "The rep's ONLY goal: book a short meeting. Not to explain products or convince.\n\n" +
+    "5 KEY PRINCIPLES:\n" +
+    "1. One-breath opener: name + company + one reason + ask for 20 seconds\n" +
+    "2. When Ethan gives time: one relevant observation + one light question\n" +
+    "3. When Ethan exits: ask for just one more moment (pattern interrupt)\n" +
+    "4. Use that moment: one reason + meeting ask immediately\n" +
+    "5. Meeting ask: low-commitment framing + '15 minutes' + two specific time options\n\n" +
+    "Engine flags:\n" + flagSummary + "\n\n" +
+    "Transcript:\n" + history + "\n\n" +
+    "Return ONLY this JSON, no markdown. Be direct and concise — each field max 2 sentences:\n" +
+    '{"summary":"2 sentences max — what happened and why","moments":[{"turn":"rep quote (10 words max)","issue":"one sentence on what went wrong","better":"one alternative line"}],"strengths":["one specific thing done well per item — max 2 items"],"improvements":["one specific fix per item — max 2 items"],"next_call_tip":"one sentence — the single most important thing to do differently"}';
+
+  try {
+    var resp = await fetch(GEMINI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.4, maxOutputTokens: 4000, thinkingConfig: { thinkingBudget: 0 } }
+      })
+    });
+    var data = await resp.json();
+    if(data.candidates && data.candidates[0] && data.candidates[0].content){
+      var raw = data.candidates[0].content.parts[0].text.trim();
+      raw = raw.replace(/```json|```/g,"").trim();
+      // Safety: if JSON is truncated, attempt to close it
+      try {
+        return JSON.parse(raw);
+      } catch(e) {
+        // Try to recover truncated JSON by closing open structures
+        var fixed = raw;
+        if(!fixed.endsWith("}")) {
+          // Count open quotes to detect unterminated string
+          var inStr = false, escaped = false;
+          for(var i=0;i<fixed.length;i++){
+            if(escaped){ escaped=false; continue; }
+            if(fixed[i]==="\\") { escaped=true; continue; }
+            if(fixed[i]==='"') inStr=!inStr;
+          }
+          if(inStr) fixed += '"'; // close open string
+          // Close open arrays and objects
+          var depth = 0, arrDepth = 0;
+          for(var j=0;j<fixed.length;j++){
+            if(fixed[j]==='{') depth++;
+            if(fixed[j]==='}') depth--;
+            if(fixed[j]==='[') arrDepth++;
+            if(fixed[j]===']') arrDepth--;
+          }
+          while(arrDepth-- > 0) fixed += ']';
+          while(depth-- > 0) fixed += '}';
+        }
+        try { return JSON.parse(fixed); } catch(e2) { return null; }
+      }
+    }
+    return null;
+  } catch(e) {
+    return null;
+  }
+}
+
+
+var DBF = {
+  reads:{
+    booked_clean:  "Good call. You got through clearly, Ethan stayed on, and the close landed with a specific time. He pushed back but you kept it moving without over-explaining. That's the right approach with someone his age.",
+    booked_bumpy:  "You got the appointment — good. The call had a rough patch but you found a way through. Worth going back to look at the moment where Ethan first pushed back — there may be a cleaner way to handle that moment next time.",
+    whatsapp:      "Ethan kept the door open but didn't commit to a specific time. This is a common pattern — he's not saying no, but he's not saying yes either. Think about how to make the time ask feel more decisive.",
+    early_exit:    "Ethan gave a clear signal early in the call that he wanted to move on, and the conversation didn't quite recover from that point. What happens in that specific moment is the turning point in every Ethan call.",
+    lectured:      "The call lost momentum after Ethan raised his age. The response became a longer explanation than he needed. With someone like him, less is more — he doesn't want to be convinced, he wants to feel like the decision makes sense for him right now.",
+    wrong_lang:    "The call lost momentum in the middle. Some of the language used didn't quite connect with where Ethan is in his life right now. He's 24 and just started working — what matters to him is quite specific.",
+    pitch:         "Ethan ended the call when the conversation shifted toward products or specific solutions. On a cold call, the job is just to book the meeting — not to share what you can offer. Everything else belongs in the meeting itself.",
+    hard_end:      "Ethan ended the call before it got going. A shorter, more direct start often makes a big difference with someone who's impatient."
+  },
+  tips:{
+    early_exit_missed:  "When someone says they're not interested early in a call, going straight into a full explanation is usually too much too soon. Asking for just one more moment first tends to work better.",
+    early_exit_ignored: "When someone signals they want to end a call, the conversation needs to acknowledge that before anything else. Moving past it without recognising it tends to make things harder to recover from.",
+    wrong_lang:         "Not everything that works in one conversation works in another. Someone who just started working has different things on their mind than someone with a family or close to retirement. Matching your language to where they actually are makes a big difference.",
+    lectured:           "When someone says they're too young, explaining why they're wrong rarely changes their mind. Agreeing with them first — then showing them a different angle — tends to get further.",
+    whatsapp:           "The door stayed open but no time was locked in. When someone says 'WhatsApp me', agreeing to it while also suggesting a specific time in the same breath tends to produce a more committed outcome.",
+    vague_close:        "The close landed but the time options weren't specific enough to make the decision easy. Two real, concrete options — day and time — give the prospect something definite to agree to.",
+    pitch:              "Product details belong in the meeting, not the call. The call's only job is to book the time. Keeping the conversation at the direction level keeps the door open longer.",
+    clean_call:         "Good outcome. One thing to watch next time — when a prospect accepts with a condition, there's often a small opportunity to make the confirmation even cleaner and more committed.",
+    hard_end:           "A shorter, more direct opener often works better with someone who's impatient. Under 25 words, clear reason, immediate question — that sequence gives the call the best chance of getting started."
+  }
+};
+
+/* ── FOUNDATION HINTS (Tier 1 — one-line action prompt) ── */
+var HINTS = {
+  s1_weak:    "Tell Ethan who you are, why you're calling, and ask for 20 seconds.",
+  s1_hasId:   "Ethan knows who you are — now give him one reason to stay on. Then ask for 20 seconds.",
+  s2_noObs:   "Share one thing relevant to where Ethan is right now. Then ask him one light question.",
+  s2_noQ:     "Good — now ask Ethan one light question to bring him into the conversation.",
+  s2_pitch:   "Too early for products. Stay at the situation level — what he might be missing, not what you're selling.",
+  s3_ack:     "Ethan raised something — show him you heard it before you say anything else.",
+  s3_reframe: "Lower the ask — make clear it's just a conversation, no commitment. Then ask for the meeting.",
+  s3_noask:   "Good — now say how long it takes and give two specific times.",
+  s4_timebox: "Tell Ethan how long the meeting takes. Then give two specific times.",
+  s4_options: "Give two specific times — day and time of day. Ethan just picks one.",
+  pi_use:     "Ethan wants to go. Ask for just one more moment before anything else.",
+  pi_window:  "Prospect gave you a moment. This is it — one reason, then ask for the meeting right now. Don't save it for next turn.",
+  pi_ignored: "Ethan said he wasn't interested. Acknowledge that first before you continue.",
+  wrong_lang: "That language may not connect with Ethan. Stay close to where he actually is right now."
+};
+
+/* ── COACHING CARDS (Tier 2 — full guidance, pulled on demand) ── */
+var COACHING = {
+  s1_weak: {
+    stage: "Introducing yourself",
+    principle: "Ethan needs four things before he decides to stay on: your name, your company, one brief reason this might matter to him, and a request for 20 seconds — all in one breath.",
+    why: "He's deciding in the first 10 seconds whether to keep listening. If he can't immediately answer 'who is this and why should I care?' he'll brush you off.",
+    avoid: "Giving a long company intro before asking for time. Asking multiple questions. Mentioning products in your opener."
+  },
+  s1_hasId: {
+    stage: "Giving a reason to stay on",
+    principle: "Ethan knows who you are. Now give him one concrete reason to stay on — something about his situation, not your product. Then ask for 20 seconds.",
+    why: "You've cleared the first hurdle but the line is still fragile. He needs a reason to keep listening before he'll give you time.",
+    avoid: "Repeating your introduction. Jumping straight to a product before you've asked for time."
+  },
+  s2_noObs: {
+    stage: "Sharing something relevant",
+    principle: "Ethan gave you time. Use it. Give him one specific observation about a situation people at his career stage face — something anchored to where he actually is right now.",
+    why: "Generic financial planning language doesn't land for a 24-year-old. One specific, relevant observation makes him feel like you understand his situation — not just his demographic.",
+    avoid: "Starting with a product name or statistic. Anything that sounds like a pitch. Giving two observations instead of one."
+  },
+  s2_noQ: {
+    stage: "Asking one question",
+    principle: "You've shared something relevant — now ask one light question to hand the conversation to Ethan.",
+    why: "The question does two things: it invites him in and signals you're not just broadcasting at him. Without it, the conversation stays one-sided.",
+    avoid: "Asking something too personal — salary, savings, existing policies. Asking more than one question."
+  },
+  s2_pitch: {
+    stage: "Product language too early",
+    principle: "Ethan gave you time — not to hear about a product. Shift back to the situation: what he might be missing, what happens if things change at work.",
+    why: "Mentioning specific plans or products triggers resistance before you've given him a reason to care. Products belong in the meeting.",
+    avoid: "Plan names, premium amounts, coverage types, anything that sounds like you're building up to a sale."
+  },
+  s3_ack: {
+    stage: "Ethan raised a concern",
+    principle: "Ethan pushed back or gave a reason. Acknowledge it — one sentence. Show you heard him before you say anything else.",
+    why: "If you skip acknowledgement and go straight to your next point, he feels dismissed. One sentence lowers his guard and makes him more likely to hear what comes next.",
+    avoid: "Moving straight into your reason or the meeting ask without acknowledging what he said first."
+  },
+  s3_reframe: {
+    stage: "Lowering the ask",
+    principle: "Ethan's resistance is about perceived cost — time, obligation, commitment. Make clear the meeting is just a conversation, nothing to commit to. Then ask for the meeting in the same breath.",
+    why: "Lowering the ask without immediately following with the meeting question loses the moment. The ask belongs in the same sentence.",
+    avoid: "Saying 'it's just a chat' and then pausing. The meeting question must come immediately — don't leave a gap."
+  },
+  s3_noask: {
+    stage: "Asking for the meeting",
+    principle: "You've lowered the ask — Ethan's resistance has softened. Now close. Say how long it takes, give two specific times, and let him pick one.",
+    why: "Lowering the ask without immediately following with the question loses the moment. The ask while he's warm is the close.",
+    avoid: "Asking 'when are you free?' — open questions create friction. You give the times, he picks one."
+  },
+  s4_timebox: {
+    stage: "Saying how long it takes",
+    principle: "Ethan needs to know how long before he'll commit. Say it — 15 minutes — then give two specific times.",
+    why: "'15 minutes' is something concrete he can agree to. 'A quick chat' or 'won't take long' is vague and makes it harder to say yes.",
+    avoid: "Leaving the duration open. Saying 'won't take long' without naming a number. 15 minutes is the right number."
+  },
+  s4_options: {
+    stage: "Giving two times to choose from",
+    principle: "Give two specific times — day and rough time of day. Ethan just picks one. Don't ask when he's free.",
+    why: "An open question puts all the work on him. Two specific options make the decision easy — he just picks the one that works.",
+    avoid: "Asking 'when are you free?' Always give two options, not one."
+  },
+  pi_use: {
+    stage: "Ethan wants to go",
+    principle: "Ethan signalled he wants to end the call. Don't give your reason yet — ask for just one more moment first. That's the smallest ask that keeps the call alive.",
+    why: "Going straight into your reason feels pushy when he's already trying to exit. A small ask for one more moment is much easier to say yes to.",
+    avoid: "Going straight into your reason or the meeting ask. He hasn't given you permission yet. One moment at a time."
+  },
+  pi_window: {
+    stage: "Prospect gave you a moment",
+    principle: "They said ok. Use that moment right now — one reason to care, lower the ask, ask for the meeting. All in this turn. The meeting ask cannot wait for the next turn.",
+    why: "This is the most valuable moment in the call. If you give a reason but don't ask for the meeting, the moment is gone. The next turn will be colder — the prospect gave you one window, not two.",
+    avoid: "Giving your reason and waiting to see how they respond before asking. Fill the window completely — reason, lower the ask, meeting question — done."
+  },
+  pi_ignored: {
+    stage: "Ethan's signal was missed",
+    principle: "Ethan signalled he wanted to go and you continued without acknowledging it. For next time — when he signals exit, acknowledge it first, then ask for one more moment.",
+    why: "Moving past his signal without acknowledging it makes him feel unheard. That's when calls close down for good.",
+    avoid: "Continuing as if he didn't say it. One acknowledgement sentence changes everything."
+  },
+  wrong_lang: {
+    stage: "Language didn't connect",
+    principle: "Some of what you said didn't connect with Ethan's life right now. He's 24 and just started working. Stay close to what's real for him — his company insurance, his job, what happens if things change.",
+    why: "Language about retirement, dependants, or family protection has no anchor for him yet. It signals you don't understand where he is.",
+    avoid: "Retirement, dependants, death benefits, estate planning — anything that belongs to a different life stage."
+  }
+};
+
+/* ── TIPS MODAL CONTENT ── */
+var TIPS_CONTENT = {
+  howto: {
+    title: "How it works",
+    body:  "APPT.COACH simulates a cold call. You type or say your lines, the prospect responds based on what you say and how you handle each moment.\n\nYour only goal: book a short 15-minute meeting. Not to explain everything — just to get the meeting.\n\nThe simulation tracks the call based on your language and how you handle what the prospect throws at you. At the end you get a read on how the call went and one specific thing to work on.\n\n──────────────────\nWHAT YOU NEED TO DO\n──────────────────\n\nCalls don't follow a clean sequence. What you need to handle depends on what the prospect says. There are a few situations that come up on every call:\n\nProspect doesn't know who you are\nTell them your name, your company, one reason for calling, and ask for 20 seconds.\n\nProspect is listening but hasn't engaged\nShare one thing relevant to where they are right now. Ask one light question.\n\nProspect wants to exit\nDon't argue. Ask for just one more moment.\n\nProspect gave you a moment\nGive your one reason to care. Lower the ask. Ask for the meeting — all in one breath. Don't save the meeting ask for the next turn.\n\nProspect raised a concern\nAcknowledge it first — one sentence. Then give your reason and lower the ask.\n\nProspect asked about the meeting\nSay how long it takes. Give two specific times. Let them pick one.\n\nProspect said WhatsApp me\nAgree — and suggest a specific time in the same breath.\n\nProspect said maybe next time\nTreat it the same as wanting to exit. Ask for one more moment before accepting the deferral.\n\n──────────────────\nHOW IT USUALLY GOES\n──────────────────\n\nMost of the time, the prospect will push back straight after your intro — before you've shared anything. That's normal. The whole call often happens in one exchange: ask for a moment, get it, give your reason, lower the ask, ask for the meeting.\n\nThe one thing to remember: never argue with the pushback. Ask for one more moment. Use that moment. Then ask for the meeting.\n\n──────────────────\nEXAMPLE\n──────────────────\n\nSarah, 29, Marketing Executive.\n\nSarah: Hello?\nRep: Hi Sarah, Marcus from Great Eastern. I help people your age make sure their income is actually working for them. Got 20 seconds?\nSarah: Sorry, not interested.\n\nRep: Fair enough. Just one thing — then it's up to you.\nSarah: Ok, quickly.\n\nRep: Most people your age are earning well but haven't checked if it's building toward anything. Nothing to commit to — just 15 minutes to see where things stand. Saturday morning or Tuesday evening?\nSarah: Can you WhatsApp me instead?\n\nRep: Of course — I'll send you a message. How does Tuesday evening look for a quick 15 minutes?\nSarah: Yeah, Tuesday evening works actually.\n\nNotice: Sarah pushed back twice. The rep didn't argue either time. First pushback — asked for one moment. Second pushback (WhatsApp) — agreed and immediately suggested a specific time."
+  },
+  modes: {
+    title: "Practice modes",
+    body:  "FOUNDATION\nCoaching hints appear after each of the prospect's replies. The hint tells you what to do next based on what they just said. Tap the ? for more detail on why it matters and what to avoid.\n\nADVANCED\nNo hints during the call. You handle each situation on your own. Use this when you want to test yourself under realistic conditions.\n\nBoth modes have the same debrief at the end."
+  }
+};
+
+/* ================================================================
+   LAYER 2 — ENGINE
+================================================================ */
+var _S = null;    // session state
+var _mode = "foundation";
+var _selectedPersona = "ethan";
+
+/* ── ECHO SYSTEM ─────────────────────────────────────────────────
+   Scans the rep's line for specific surface phrases and splices
+   a natural reference to them into Ethan's reply ~40% of turns.
+   Never fires on instant-end replies or very short rep lines.
+────────────────────────────────────────────────────────────────*/
+
+/* Echo targets — ordered longest-match first to avoid partial hits */
+var ECHO_TARGETS = [
+  // Time asks — most important, highest connection impact
+  { match:["20 seconds","20 secs","got 20","give me 20"],  tag:"t20",   word:"20 seconds" },
+  { match:["30 seconds","30 secs","got 30","give me 30"],  tag:"t30",   word:"30 seconds" },
+  { match:["10 seconds","10 secs","give me 10","just 10"], tag:"t10",   word:"10 seconds" },
+  { match:["15 minutes","15 mins","15-minute","quick 15"], tag:"t15",   word:"15 minutes" },
+  { match:["20 minutes","20 mins","20-minute","quick 20"], tag:"t20m",  word:"20 minutes" },
+  { match:["one minute","a minute","just a minute"],        tag:"t1m",   word:"a minute"   },
+
+  // Meeting day/time options
+  { match:["saturday morning"],  tag:"sat_am",  word:"Saturday morning" },
+  { match:["saturday evening"],  tag:"sat_pm",  word:"Saturday evening" },
+  { match:["tuesday evening","tuesday night","tuesday after"], tag:"tue_pm", word:"Tuesday evening" },
+  { match:["tuesday morning"],   tag:"tue_am",  word:"Tuesday morning"  },
+  { match:["saturday"],          tag:"sat",     word:"Saturday"         },
+  { match:["tuesday"],           tag:"tue",     word:"Tuesday"          },
+
+  // No-obligation framing
+  { match:["no obligation","no commitment","nothing to commit","nothing to sign","nothing to buy","no need to commit"], tag:"no_oblig", word:"no obligation" },
+  { match:["not about changing","nothing to change","not here to change"],  tag:"no_change", word:"not about changing anything" },
+  { match:["just a check","just to check","purely a check","just a review"], tag:"just_check", word:"just a check" },
+  { match:["informational","just information","purely informational"],        tag:"info_only",  word:"purely informational" },
+
+
+  // Group insurance topic
+  { match:["group insurance","company insurance","company benefits","group benefits"], tag:"grp_ins", word:"group insurance" },
+  { match:["switch jobs","leave the company","change jobs","if you leave"],            tag:"job_chg", word:"switch jobs"      },
+  { match:["what it covers","what's covered","what it actually covers"],               tag:"covers",  word:"what it covers"  },
+
+  // Identity
+  { match:["great eastern","ge ","from ge"],  tag:"ge",      word:"Great Eastern" },
+  { match:["financial adviser","financial advisor","fa "], tag:"fa", word:"financial adviser" },
+
+  // Misc hooks
+  { match:["just one thing","one thing then"], tag:"one_thing", word:"one thing"   },
+  { match:["hear me out","before you go"],     tag:"hear_me",   word:"hear me out" },
+  { match:["where you stand","know where"],    tag:"stand",     word:"where you stand" },
+  { match:["your age","people your age","at your stage"], tag:"ur_age", word:"your age" }
+];
+
+/* Echo reply templates — keyed by tag.
+   {W} is replaced with the matched word.
+   Multiple templates per tag — one is picked randomly. */
+var ECHO_TEMPLATES = {
+  t20:       ["{W}? For what exactly?", "You said {W} — ok, go on.", "{W} only ah?"],
+  t30:       ["{W}? What's this about?", "Ok {W} then. Make it quick.", "{W} — fine."],
+  t10:       ["{W}? Say lah.", "Ok {W}. Go ahead.", "{W} only — fine."],
+  t15:       ["{W} for what exactly?", "{W} — that's quite long leh.", "Just {W}?"],
+  t20m:      ["{W}? That's a lot leh.", "{W} — not sure I have that."],
+  t1m:       ["A minute for what?", "Ok, {W} then. What is it?"],
+  sat_am:    ["{W}? Let me think.", "Mm, {W} might work.", "{W} is ok lah."],
+  sat_pm:    ["{W}? Maybe lah.", "{W} could work."],
+  tue_pm:    ["{W}? Can consider.", "{W} might be ok."],
+  tue_am:    ["{W} morning? Quite early leh.", "{W} morning can lah."],
+  sat:       ["{W} could work.", "Mm, {W} not bad.", "{W} lah, maybe."],
+  tue:       ["{W} evening maybe.", "Mm, {W} ok lah.", "{W} could work."],
+  no_oblig:  ["You say {W} — ok lah.", "{W} right? We'll see.", "Sure, {W}."],
+  no_change: ["You say {W} — sounds like sales lah.", "{W}? Ok then."],
+  just_check:["A check for what exactly?", "What kind of check?", "Check what?"],
+  info_only: ["Purely informational? Then why call?", "Just info ah? Ok."],
+  u_decide:  ["I decide lah — I said not interested.", "If I decide, I say no."],
+  grp_ins:   ["What about my {W}?", "My {W} fine what.", "{W} — what about it?"],
+  job_chg:   ["I'm not planning to {W} lah.", "Even if I {W}, can figure out then."],
+  covers:    ["I never checked {W} before leh.", "Don't know {W} lah."],
+  ge:        ["Oh, {W} ah.", "From {W} ah, ok."],
+  fa:        ["Oh you're a {W} ah.", "So you're a {W} — ok."],
+  one_thing: ["{W}? What thing?", "Ok, {W} then."],
+  hear_me:   ["Ok lah, say it.", "Fine, what is it."],
+  stand:     ["What do you mean by {W}?", "{W} — like what?"],
+  ur_age:    ["What about {W}?", "What's {W} got to do with it?"]
+};
+
+function _extractEchoTarget(repText){
+  var t = repText.toLowerCase();
+  for(var i=0; i<ECHO_TARGETS.length; i++){
+    var et = ECHO_TARGETS[i];
+    for(var j=0; j<et.match.length; j++){
+      if(t.indexOf(et.match[j]) >= 0){
+        return { tag: et.tag, word: et.word };
+      }
+    }
+  }
+  return null;
+}
+
+function _applyEcho(reply, echoTarget){
+  if(!echoTarget) return reply;
+  var templates = ECHO_TEMPLATES[echoTarget.tag];
+  if(!templates || !templates.length) return reply;
+  // ~40% chance of applying echo — feels natural, not mechanical
+  if(Math.random() > 0.40) return reply;
+  var tmpl = _pick(templates);
+  return tmpl.replace(/\{W\}/g, echoTarget.word);
+}
+
+/* ── REPLY-TYPE CLASSIFIER (Option A) ───────────────────────────
+   Reads Ethan's finalised reply (after echo) and classifies it
+   into one of 9 reply types. The hint and coaching card are then
+   driven by what Ethan ACTUALLY SAID, not just engine state.
+────────────────────────────────────────────────────────────────*/
+
+var REPLY_TYPES = {
+  CURIOUS:       "curious",       // Ethan asked a question or sounds interested
+  NEUTRAL_ACK:   "neutral_ack",   // Short acknowledgement, waiting for content
+  NEEDS_POINT:   "needs_point",   // "Get to the point", "what do you want"
+  NEEDS_ACK:     "needs_ack",     // Ethan feels unheard, pushed back on age/reason
+  SOFT_EXIT:     "soft_exit",     // Polite brush-off, "not interested", "I'm fine"
+  COLD_EXIT:     "cold_exit",     // Hard dismissal, very cold
+  GAVE_MOMENT:   "gave_moment",   // "Ok, go on", "Say what you want", gave PI window
+  MEETING_Q:     "meeting_q",     // Asking about meeting details (time, duration)
+  WRONG_LANG:    "wrong_lang",    // Triggered by wrong-era language
+  GENERAL:       "general"        // Fallback
+};
+
+/* Map reply type → { hint text, coaching key } */
+var REPLY_HINT_MAP = {
+  curious: {
+    hint: "Ethan's curious — share one thing relevant to where he is right now, then ask one light question.",
+    key:  "s2_noObs"
+  },
+  neutral_ack: {
+    hint: "He's waiting — share one thing relevant to where he is right now.",
+    key:  "s2_noObs"
+  },
+  needs_point: {
+    hint: "He wants you to get to the point — lower the ask and ask for the meeting now.",
+    key:  "s3_reframe"
+  },
+  needs_ack: {
+    hint: "Ethan doesn't feel heard — acknowledge what he said first, one sentence, before anything else.",
+    key:  "s3_ack"
+  },
+  soft_exit: {
+    hint: "Ethan wants to go — ask for just one more moment before anything else.",
+    key:  "pi_use"
+  },
+  cold_exit: {
+    hint: "Ethan's closing down — acknowledge it briefly, then ask for one moment. Don't give your reason yet.",
+    key:  "pi_use"
+  },
+  gave_moment: {
+    hint: "Ethan gave you a moment — give your reason, lower the ask, and ask for the meeting in one breath.",
+    key:  "pi_window"
+  },
+  meeting_q: {
+    hint: "He's asking about the meeting — say how long it takes and give two specific times.",
+    key:  "s4_timebox"
+  },
+  wrong_lang: {
+    hint: "That language may not connect with Ethan. Stay close to where he actually is right now.",
+    key:  "wrong_lang"
+  },
+  general: {
+    hint: "Keep going — stay concise and direct.",
+    key:  "s2_noObs"
+  }
+};
+
+function _classifyEthanReply(reply){
+  var t = reply.toLowerCase();
+
+  // Meeting questions — check first, very specific
+  if(_any(t,["how long","how many minutes","how much time","what exactly would we cover","what do we cover","what is this meeting","what's the meeting about","what would we discuss","when are you thinking","give me a time","what time did you have","any other time","another time option","one more option","which slot","saturday or","tuesday or","morning or","evening or"]))
+    return REPLY_TYPES.MEETING_Q;
+
+  // Gave a moment — PI window opened
+  if(_any(t,["go ahead","say what you want","say it","i'm listening","listening","10 seconds","ok what","yah ok what","fine what is it","alright what","ok lah say","ok go on","quickly","make it quick","ok. but make it quick","fine, what","alright, say","go ahead, quickly"]))
+    return REPLY_TYPES.GAVE_MOMENT;
+
+  // Needs acknowledgement — feels unheard
+  if(_any(t,["you haven't acknowledged","not listening","did you hear","i said i'm young","that's my point","i already said","you're not listening","don't feel like you're listening","i told you"]))
+    return REPLY_TYPES.NEEDS_ACK;
+
+  // Needs point — impatient, wants directness
+  if(_any(t,["get to the point","what do you actually want","what do you want me to do","so what are you getting at","what's your point","and then what","ok so what","what step","what exactly are you proposing","what happens next","so what now","what does this involve","ok and","what is it you want"]))
+    return REPLY_TYPES.NEEDS_POINT;
+
+  // Curious — asking something genuine
+  if(_any(t,["what do you mean","what is it that","what does that involve","not enough meh","what is it you're checking","what are you checking","what does that mean","my company insurance","interested to know","tell me more","what gap","what would happen","what exactly"]) && t.indexOf("not interested") < 0)
+    return REPLY_TYPES.CURIOUS;
+
+  // Cold exit — hard dismissal
+  if(_any(t,["not interested. goodbye","i said no","please don't call","hanging up","going to hang up","don't call again","remove my number","goodbye","i'm going to stop you","stop you there"]))
+    return REPLY_TYPES.COLD_EXIT;
+
+  // Soft exit — polite brush-off
+  if(_any(t,["not interested","no need","no thanks","don't need","nah i'm fine","i'm good","not for me","maybe another time","maybe next time","too early","i'm quite tied up","busy right now","tied up","can't talk","not a good time","i'll think about","aiya no need","can whatsapp","whatsapp me"]))
+    return REPLY_TYPES.SOFT_EXIT;
+
+  // Neutral acknowledgement — short, waiting
+  if(_any(t,["ok and","ok, and","yah speaking","yes? what","what is it","who are you","who's this","what's this about","what company","mm","yah?","hello?","ok go on","and?","ok what"]))
+    return REPLY_TYPES.NEUTRAL_ACK;
+
+  return REPLY_TYPES.GENERAL;
+}
+
+/* ── INTENT EXTRACTION ── */
+function _extractIntents(raw){
+  var t  = _clean(raw);
+  var wc = raw.trim().split(/\s+/).length;
+
+  var hasPitch = _any(t,["whole life","term life","critical illness","ci plan","ci policy","endowment","ilp","investment-linked","unit trust","hospitalisation plan","shield plan","medishield","prushield","avivashield","great eastern shield","income shield","axa shield","sum assured","coverage amount","death benefit","tpd benefit","your premium payment","annual premium","monthly premium","quarterly premium","premium amount","policy number","policy anniversary","policy lapse","underwriting","exclusion clause","beneficiary","nomination","nominee","surrender value","cash value","projected value","rider","add-on rider","hospital rider","ci rider","term plan","term insurance","whole life insurance","protection gap","coverage gap","underinsured","mortality rate","morbidity","actuarial","compare plans","compare policies","compare products","product comparison","proposal","product brochure","buy a plan","purchase a plan","take up a plan","sign up for","sign up today","limited time","promotion ends"]);
+  var hasFear = _any(t,["what if you die","if something happens to you","when you pass","critical illness can wipe","you could get sick","suddenly fall sick","sudden death","unexpected death","die without","left behind","your family will suffer","your loved ones suffer","burden on your family","outlive your savings","run out of money","go bankrupt","financial ruin","financial disaster","can you afford","afford treatment","cancer costs","heart attack costs","stroke costs","scare you","terrifying","scary reality","wake up call","don't wait until it's too late","too late when","by then it's too late"]);
+  var tooPersonal = _any(t,["how much do you earn","what is your salary","your monthly income","your annual income","income bracket","your take-home","how much savings","how much in your bank","your net worth","any outstanding loans","any debts","credit card debt","your cpf balance","cpf ordinary","cpf special","cpf medisave","existing policies","current policies","what policies do you have","your health condition","medical history","any pre-existing","smoker or non","are you a smoker","how many dependants","any children","are you married"]);
+  var isRamble  = wc > 55;
+  var hasMultiQ = (raw.match(/\?/g)||[]).length >= 2;
+
+  var hasIdentity = _any(t,["i am","i'm","my name is","this is","speaking is","calling is","from great eastern","from ge","from aia","from prudential","from income","from singlife","from aviva","from manulife","from tokio marine","from great eastern life","from great eastern financial","financial adviser","financial advisor","fa ","licensed fa","wealth manager","financial planner","financial consultant","my name"]);
+  var hasMicroReason = _any(t,["financial plan","financial planning","financial direction","financial goals","financial health","financial picture","financial review","financial check","financial overview","financial wellness","financial readiness","financial freedom","life goals","life planning","life direction","wealth planning","wealth management","wealth building","wealth check","working toward","track for","on track","right direction","headed in the right","pointing in the right","aligned with","help working professional","help young","help people your age","help fresh grads","help engineers","help people who just started","just started working","early career","starting out","company insurance","group insurance","what your company covers","company benefits","group benefits","employer insurance","making your money work","money working for you","money work for","know where you stand","where you actually stand","your current position","options at 30","options at 35","options later","options in the future","sitting there doing nothing","actually working for you","working toward what you want"]);
+  var hasPermission = _any(t,["20 seconds","30 seconds","a minute","two minutes","quick moment","do you have","got time","have time","spare a moment","spare me","is it ok","is now ok","ok to talk","ok if i","can i","may i","do you mind","would you mind","is this a good time","got 20","got 30","give me 20","give me 30","give me a sec","can talk","can we talk","can i ask you something","20 seconds or not","can talk or not","ok or not"]);
+  var hasReason = _any(t,["most working adults","a lot of working adults","many working adults","most people your age","a lot of people your age","many people your age","most young professionals","a lot of young professionals","people who just started","guys your age","someone your age","at your stage","at this stage","at this point in","early in your career","financial plan hasn't","plan hasn't been","hasn't really been looked","set up a few years","set up years ago","put in place years ago","set and forget","back burner","been pushed","keep getting pushed","been meaning to","meaning to get to","always push it back","life changes but","life moves but","things change but","company insurance","group insurance covers","what your group","switch jobs","leave the company","change jobs","between jobs","what it actually covers","what's actually covered","what exactly covers","covered if you leave","covered if you switch","group insurance gap","don't know what","most people don't know","most people don't realise","financial independence","retire early","retire at","retire before","options later","options at 30","options at 35","have options","not just saving","earning well but","earning but not","making your money","money working","working toward something","know where you stand","where you actually stand","gap between","blind spot","blind spots","something missing","starting young","start early","starting early","start at 24","start now"]);
+  var hasQMark = raw.indexOf("?")>=0;
+  var lqp = ["when did you last","when was the last","last time you","have you had a chance","have you ever","ever had a proper","has it been a while","been a while since","a while since you","has anything changed","anything major changed","anything shifted","would you say","does that sound","sound familiar","ring a bell","crossed your mind","on your mind","thinking about","have you looked","have you checked","have you reviewed","is that where you're at","is that familiar","can relate","know what it covers","know what's covered","checked what","understand what","sure what your","clear on what"];
+  var lqt = ["when","have you","did you","are you","do you","would you","has that","is that"];
+  var hasLightQ = !tooPersonal&&!hasMultiQ&&!hasPitch&&(lqp.some(function(p){return t.indexOf(p)>=0;})||(lqt.some(function(p){return t.indexOf(p)>=0;})&&hasQMark));
+  var hasAck = _any(t,["i understand","i get it","i get that","got it","i see","fair enough","that is fair","thats fair","makes sense","that makes sense","understandable","totally understandable","noted","of course","no worries","not a problem","not at all","absolutely","totally","totally fair","totally get","totally understand","completely understand","i hear you","i hear that","i appreciate","appreciate that","i respect","respect that","most people feel","a lot of people","many people feel","you're not alone","youre not alone","not alone","that's common","thats common","very common","right right","i see i see","sure","for sure","definitely","valid","reasonable","you are right","youre right","that is right","exactly","ya fair","ya fair lah","yah fair","yah lah","yah i know","yah makes sense","ok ok i understand","ok ok i get","aiya i know","aiya i understand","good to know","good to hear","fair lah","fair enough lah","yah totally","totally lah","yah totally fair"]);
+  var hasClarify = !tooPersonal&&!hasMultiQ&&hasQMark&&_any(t,["just to understand","just so i know","just to check","just to clarify","just want to understand","help me understand","can i ask","may i ask","can i just check","is it mainly","is it more","is it the timing","is it that you","is it because","is it mostly","is it primarily","making you hesitate","holding you back","your main concern","not sure it's relevant","not sure whats involved","worried about","what is it that","what's making you","whats making you","what's stopping you","whats stopping you"]);
+  var hasTbRx = /\b\d{1,2}\s*(?:min(?:ute)?s?|mins?|seconds?|secs?)\b/i.test(raw);
+  var hasReframe = _any(t,["not about changing","isn't about changing","nothing to change","no commitment","no obligation","nothing to commit","nothing to decide","no need to decide","nothing to sign","nothing to buy","no need to buy","just a review","just a check","just to see","just to make sure","just to ensure","just to confirm","just clarity","just making sure","just want to check","purely to check","purely a check","just to give you","just to see if","just to find out","not selling","not here to sell","no selling","not a sales call","isn't a sales call","not looking to sell","not trying to sell","not pitching","no pitch","no hard sell","no pressure","zero pressure","not pushing","nothing to push","won't take long","wont take long","will not take long","very quick","very brief","quick one","short one","you decide","up to you","your call","no need to commit","15 minutes only","20 minutes only","15 mins only","20 mins only","15 minutes max","20 minutes max","15-minute","20-minute","nothing to buy lah","no need buy","just see only","check only","confirm only","just confirm","specific to your situation","hard to put in a message","informational","just information","just to let you know","know where you stand","just to know","make sure you have a clear","clarity on where"])||hasTbRx;
+  var hasDismiss = _any(t,["i know i know","just listen","you need to listen","just let me","stop interrupting","you are not listening","you need to hear","i am telling you","trust me","just trust me","you should listen"]);
+  var hasReschedule = _any(t,["better time","good time to call","when should i call","call you back","reach you","another time to call","whatsapp","whats app","text you","email you","send you","call you later"]);
+  var hasTimebox = hasTbRx||_any(t,["10 min","15 min","20 min","30 min","10 mins","15 mins","20 mins","30 mins","10 minute","15 minute","20 minute","30 minute","10 minutes","15 minutes","20 minutes","30 minutes","half an hour","short meeting","quick meeting","short chat","quick chat","short call","quick call","short zoom","quick zoom","quick 15","quick 20","15 only","20 only","very quick","very brief","won't take long","wont take long","will not take long","very short","short lah"]);
+  var hasOr = t.indexOf(" or ")>=0;
+  var days = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday","mon","tue","wed","thu","fri","sat","sun","today","tomorrow","tonight","next week","this week","weekend","weekday","after work","weekends"];
+  var tods = ["morning","afternoon","evening","night","lunch","lunchtime","after lunch","after dinner","before work","end of day","over coffee","over zoom"];
+  var txRx = /\b([0-9]{1,2}(?::[0-9]{2})?\s*(?:am|pm))\b/i.test(raw);
+  var ac = days.filter(function(d){return t.indexOf(d)>=0;}).length+tods.filter(function(d){return t.indexOf(d)>=0;}).length+(txRx?1:0);
+  var hasTwoOpts = hasOr&&ac>=2;
+  var hasMeet = _any(t,["meet","meetup","appointment","appt","zoom","teams","catch up","catchup","session","sit down","coffee","kopi","lunch","tea","call","chat","discussion","talk","conversation","consult","consultation","face to face","in person","come by","pop by","drop by","video call","google meet","when are you free","when are you available","what time suits","what time works","free this","are you free"])||(hasTimebox&&(hasOr||ac>=1))||(hasTwoOpts&&ac>=2)||(ac>=1&&hasLightQ);
+
+  /* Layer 2 — Ethan specific */
+  var hasPI       = _any(t,["just one thing","one thing then you decide","10 seconds then you decide","10 seconds only","just 10 seconds","give me 10 seconds","let me just say one thing","say one thing then","one thing 10 seconds","just a sec then","just one sec then you decide","20 seconds then","just 20 seconds then","hear me out","just hear me out","before you go","before you hang up","30 seconds then","yah totally fair just","fair just one","totally fair one thing"]);
+  var hasIndFrame = _any(t,["on your own terms","know where you stand","without depending","not depending on parents","not depending on anyone","your own terms","guys your age","people your age are still","standing on your own","for yourself","independent","on your own","your own picture","make your own","understand it yourself","know for yourself"]);
+  var hasHSFrame  = _any(t,["people with most options at 3","starting at 24","start at 24","get clear at 24","figuring it out at 3","costs more at 3","options at 30","options at 35","right position to","earlier you start","start earlier","starting earlier","started at your age","starting young","get ahead while","started early","start now vs","now vs later","24 vs 3","earlier is","early is","head start","headstart","best time to start","right time to start","people who have the most options","the most financial options"]);
+  var hasOptFrame = _any(t,["money working toward something","not just disappearing","whatever you earn working","don't need a lot to plan","planning is just making sure","making sure what you earn","your money actually working","money isn't just sitting","not just sitting there","working for you","money doing something","put your money to work"]);
+  var hasCmpHook  = _any(t,["company insurance","group insurance","company benefits","group benefits","employer insurance","your company","your employer","switch jobs","leave the company","change jobs","between jobs","what it actually covers","what's covered if","what exactly covers","covered if you leave","covered if you switch","group insurance gap"]);
+
+  /* Layer 3 — wrong language */
+  var hasWrongLang = _any(t,["protect your family","protect your loved ones","your dependants","dependants","your children","your kids","your spouse","your wife","your husband","leave behind","legacy","estate planning","will planning","make a will","retirement fund","retire at 65","retirement savings","pension","critical illness","ci coverage","hospitalisation","hospital plan","medisave","medishield","careshield","eldershield","your parents","protect your parents","parent's medical"]);
+
+  return { wordCount:wc, flags:{
+    hasIdentity:hasIdentity, hasMicroReason:hasMicroReason, hasPermission:hasPermission,
+    hasReason:hasReason, hasLightQ:hasLightQ, hasAck:hasAck, hasClarify:hasClarify,
+    hasReframe:hasReframe, hasTimebox:hasTimebox, hasTwoOptions:hasTwoOpts, hasMeet:hasMeet,
+    hasPitch:hasPitch, hasFear:hasFear, tooPersonal:tooPersonal, isRamble:isRamble, hasMultiQ:hasMultiQ, hasDismiss:hasDismiss, hasReschedule:hasReschedule,
+    hasPatternInterrupt:hasPI, hasIndependenceFrame:hasIndFrame, hasHeadstartFrame:hasHSFrame,
+    hasOptionsFrame:hasOptFrame, hasCompanyHook:hasCmpHook, hasWrongLang:hasWrongLang
+  }};
+}
+
+/* ── WARMTH DELTA ── */
+function _warmthDelta(f, ctx){
+  if(f.tooPersonal) return -45;
+  if(f.hasFear)     return -28;
+  if(f.hasPitch)    return -20;
+  var d=0;
+  if(f.isRamble)   d-=20;
+  if(f.hasMultiQ)  d-=18;
+  if(f.hasWrongLang) d-=6;
+  var ph=ctx.phase, st=ctx.state, rep=ctx.isRepeat;
+  if(ph===1){
+    if(f.hasIdentity&&f.hasMicroReason&&f.hasPermission) d+=18;
+    else if(f.hasIdentity&&f.hasMicroReason)  d+=13;
+    else if(f.hasIdentity&&f.hasPermission)   d+=10;
+    else if(f.hasIdentity&&f.hasReason)       d+=10;
+    else if(f.hasIdentity)                    d+=4;
+    else if(f.hasPermission)                  d+=2;
+    else                                      d-=6;
+    if(f.hasCompanyHook||f.hasMicroReason)    d+=3;
+  }
+  if(ph===2){
+    if((f.hasReason||f.hasMicroReason)&&f.hasLightQ) d+=14;
+    else if(f.hasReason||f.hasMicroReason) d+=6;
+    else if(f.hasLightQ) d+=4;
+    else d-=5;
+    if(f.hasCompanyHook)       d+=4;
+    if(f.hasHeadstartFrame)    d+=3;
+    if(f.hasIndependenceFrame) d+=3;
+    if(f.hasOptionsFrame)      d+=2;
+  }
+  if(ph===3){
+    if(st==="EARLY_EXIT"){
+      if(f.hasPatternInterrupt)          d+=2;
+      else if(f.hasReframe||f.hasMeet)   d-=8;
+      else if(f.hasAck)                  d+=0;
+      else                               d-=14;
+    } else if(st==="PI_WINDOW"){
+      var hk=f.hasCompanyHook||f.hasHeadstartFrame||f.hasIndependenceFrame||f.hasOptionsFrame;
+      if(hk&&f.hasLightQ) d+=16;
+      else if(hk)         d+=10;
+      else if(f.hasReason||f.hasMicroReason) d+=6;
+      else                d-=6;
+    } else if(st==="ACK"){
+      if(f.hasAck)                     d+=10;
+      else if(f.hasPatternInterrupt)   d+=3;
+      else if(f.hasDismiss)            d-=16;
+      else                             d-=12;
+      if(f.hasMeet&&!f.hasAck)         d-=4;
+    } else if(st==="REFRAME"){
+      if(f.hasReframe&&f.hasTimebox&&f.hasTwoOptions) d+=18;
+      else if(f.hasReframe&&f.hasMeet) d+=13;
+      else if(f.hasReframe)            d+=7;
+      else if(f.hasMeet)               d+=2;
+      else if(f.hasAck)                d+=3;
+      else                             d-=7;
+      if(f.hasHeadstartFrame)     d+=4;
+      if(f.hasIndependenceFrame)  d+=4;
+      if(f.hasOptionsFrame)       d+=3;
+    }
+  }
+  if(ph===4){
+    if(f.hasMeet&&f.hasTimebox&&f.hasTwoOptions) d+=10;
+    else if(f.hasMeet&&f.hasTimebox) d+=4;
+    else if(f.hasMeet) d+=1;
+    else d-=5;
+  }
+  if(rep) d-=10;
+  return d;
+}
+
+/* ── INTENT BUCKET (repeat detection) ── */
+function _bkt(f,ph,st){
+  if(f.hasPitch)    return "PITCH";
+  if(f.hasFear)     return "FEAR";
+  if(f.tooPersonal) return "PERSONAL";
+  if(ph===1){
+    if(f.hasIdentity&&(f.hasMicroReason||f.hasReason)&&f.hasPermission) return "P1_FULL";
+    if(f.hasIdentity&&(f.hasMicroReason||f.hasReason)) return "P1_R";
+    if(f.hasIdentity) return "P1_ID";
+    return "P1_0";
+  }
+  if(ph===2){
+    var ob=f.hasReason||f.hasMicroReason;
+    if(ob&&f.hasLightQ) return "P2_FULL";
+    if(ob) return "P2_OBS"; if(f.hasLightQ) return "P2_Q";
+    return "P2_0";
+  }
+  if(ph===3){
+    if(st==="EARLY_EXIT"){ if(f.hasPatternInterrupt) return "P3_PI"; return "P3_EE"; }
+    if(st==="PI_WINDOW"){ var hk=f.hasCompanyHook||f.hasHeadstartFrame||f.hasIndependenceFrame; if(hk) return "P3_PIW_HK"; return "P3_PIW_0"; }
+    if(f.hasAck&&f.hasReframe&&f.hasMeet) return "P3_ALL";
+    if(f.hasAck&&f.hasReframe) return "P3_AR";
+    if(f.hasAck) return "P3_ACK"; if(f.hasReframe) return "P3_RFM";
+    if(f.hasMeet) return "P3_MEET"; return "P3_0";
+  }
+  if(ph===4){
+    if(f.hasMeet&&f.hasTimebox&&f.hasTwoOptions) return "P4_FULL";
+    if(f.hasMeet&&f.hasTimebox) return "P4_TB";
+    if(f.hasMeet) return "P4_MEET"; return "P4_0";
+  }
+  return "UNK";
+}
+
+/* ── OUTCOME ROLL ── */
+function _roll(w,q){
+  var b;
+  if(w>=60)      b=q==="perfect"?.80:q==="partial"?.48:.22;
+  else if(w>=45) b=q==="perfect"?.60:q==="partial"?.32:.14;
+  else if(w>=30) b=q==="perfect"?.38:q==="partial"?.20:.07;
+  else           b=q==="perfect"?.18:.06;
+  b+=Math.random()*.10-.05; b=Math.max(.03,Math.min(.88,b));
+  var r=Math.random();
+  if(r<b) return "accept";
+  if(r<b+(1-b)*.38) return "delay";
+  return "softReject";
+}
+
+/* ── STAGE LABEL ── */
+function _stageLabel(ph, st){
+  if(ph===1) return "Introducing yourself";
+  if(ph===2) return "Sharing your reason";
+  if(ph===3){
+    if(st==="EARLY_EXIT") return "Ethan wants to go";
+    if(st==="PI_WINDOW")  return "Ethan gave you a moment";
+    if(st==="ACK")        return "Ethan raised a concern";
+    if(st==="REFRAME")    return "Lower the ask";
+    return "Handling pushback";
+  }
+  if(ph===4) return "Asking for the meeting";
+  return "";
+}
+
+/* ── INIT SESSION ── */
+function _initSession(){
+  var r=Math.random();
+  var bt = r<.55 ? "rushed" : r<.85 ? "neutral" : "distracted";
+  var ws = bt==="rushed"?20 : bt==="neutral"?25 : 22;
+  _S = {
+    phase:1, state:null,
+    reasonSeen:false, questionSeen:false,
+    objStep:"ack", objCycles:0, maxObjCycles: Math.random()<.65?1:2,
+    waitingForObj:false,
+    earlyExitFired:false, piHandled:false, earlyExitMissed:false, earlyExitIgnored:false,
+    wrongLangCount:0, lectureDetected:false, pitchDetected:false, fearDetected:false,
+    warmth:ws, bt:bt, turn:1, maxTurns:14,
+    p4FollowUps:0,
+    status:"active", endReason:null,
+    lastReply:null, lastBkt:null,
+    transcript:[],
+    // ── Memory layer ──────────────────────────────────────────
+    // Facts established by the rep and acknowledged (not rejected) by Ethan
+    established: {
+      identity:   false,  // rep gave name/company
+      reason:     false,  // rep gave a hook/reason
+      permission: false   // rep asked for time and Ethan didn't hard-reject
+    },
+    // What Ethan has explicitly asked already — prevents repeat questions
+    askedAbout: {
+      whoIsThis:  false,  // "Who are you?"
+      whatIsThis: false,  // "What is this about?"
+      howLong:    false,  // "How long?"
+      whatOptions:false   // "Which days/times?"
+    }
+  };
+}
+
+
+/* ── MEMORY HELPERS ── */
+
+// After Ethan gives a non-rejecting reply, mark what the rep established this turn
+function _markEstablished(f, reply){
+  var isRejecting = POOLS.hard_reject.some(function(r){ return r===reply; }) ||
+                    POOLS.s1_weak.some(function(r){ return r===reply; });
+  if(isRejecting) return;
+  if(f.hasIdentity)                     _S.established.identity   = true;
+  if(f.hasReason||f.hasMicroReason)    _S.established.reason     = true;
+  if(f.hasPermission)                   _S.established.permission = true;
+}
+
+// Detect what Ethan's reply is asking and mark it so we don't ask twice
+function _markAskedAbout(reply){
+  var t = reply.toLowerCase();
+  if(_any(t,["who are you","who is this","who's this","who's calling","who am i speaking","who is calling","who are you again"]))
+    _S.askedAbout.whoIsThis = true;
+  if(_any(t,["what is this about","what's this about","what do you want","what is it","what's it about","what are you calling about"]))
+    _S.askedAbout.whatIsThis = true;
+  if(_any(t,["how long","how many minutes","how much time","what's the duration","how long will"]))
+    _S.askedAbout.howLong = true;
+  if(_any(t,["which day","what day","when are you","what time","morning or","evening or","saturday or","tuesday or","monday or","give me options","what options","which slot"]))
+    _S.askedAbout.whatOptions = true;
+}
+
+// Pick from a pool but skip replies that re-ask an already-answered question
+function _pickMemory(pool, lastReply){
+  var filtered = pool.filter(function(r){
+    var t = r.toLowerCase();
+    if(_S.askedAbout.whoIsThis   && _any(t,["who are you","who is this","who's this","who's calling","who are you again"])) return false;
+    if(_S.askedAbout.whatIsThis  && _any(t,["what is this about","what's this about","what do you want","what is it","what's it about"])) return false;
+    if(_S.askedAbout.howLong     && _any(t,["how long","how many minutes","how much time"])) return false;
+    if(_S.askedAbout.whatOptions && _any(t,["which day","what day","what time","morning or","evening or","give me options","what options"])) return false;
+    return true;
+  });
+  var src = filtered.length >= 2 ? filtered : pool;
+  return _pickNo(src, lastReply);
+}
+
+/* ── RUDE DETECTION ── */
+function _isRude(text,wc){
+  var t=text.toLowerCase();
+  var rd=["idiot","stupid","shut up","go away","screw you","get lost","piss off","fk off","wtf","rubbish","nonsense","waste of time","waste my time","not interested at all","never call again","remove my number","do not call","don't call me anymore","bodoh","siao","buay paiseh"];
+  for(var i=0;i<rd.length;i++) if(t.indexOf(rd[i])>=0) return true;
+  if(wc<=1&&text.replace(/[a-z0-9\s]/gi,"").length>text.length*.5) return true;
+  return false;
+}
+
+/* ── REP GIVE-UP DETECTION ── */
+function _isGiveUp(text){
+  var t=text.toLowerCase();
+  var wc=t.trim().split(/\s+/).length;
+  var gu=["bye","goodbye","good bye","i give up","forget it","never mind","forget this","ok i'll stop","ok i will stop","sorry to bother","sorry for bothering","take care","have a good day","have a nice day","thanks anyway","thank you anyway","ok bye","ok goodbye","okbye","gtg","got to go","gotta go","no worries bye","alright bye","ok take care","see ya","see you","ciao","adios","farewell","ok then bye","ok lah bye","bye bye","byebye","buh bye","toodles"];
+  for(var i=0;i<gu.length;i++) if(t.indexOf(gu[i])>=0) return true;
+  if(wc<=4&&(t.indexOf("bye")>=0||t.indexOf("goodbye")>=0)) return true;
+  return false;
+}
+
+/* ── MAIN TURN ── */
+function _doTurn(raw){
+  if(!_S||_S.status!=="active") return null;
+  var text=raw.trim(); if(!text) return null;
+  var I=_extractIntents(text), f=I.flags, ph=_S.phase, st=_S.state;
+  _S.transcript.push({role:"rep",text:text,turn:_S.turn});
+  var bk=_bkt(f,ph,st);
+  var rep=bk===_S.lastBkt&&bk!=="P1_FULL"&&bk!=="P2_FULL"&&bk!=="P3_ALL"&&bk!=="P4_FULL";
+  _S.lastBkt=bk;
+  if(f.hasPitch) _S.pitchDetected=true;
+  if(f.hasFear)  _S.fearDetected=true;
+  if(f.hasWrongLang) _S.wrongLangCount++;
+  var delta=_warmthDelta(f,{phase:ph,state:st,isRepeat:rep});
+  _S.warmth=Math.max(0,Math.min(100,_S.warmth+delta));
+
+  var reply="", hint="", hintKey="", critical="", ended=false;
+
+  /* Instant ends */
+  if(_isRude(text,I.wordCount)){
+    _S.warmth=0; reply=_pick(POOLS.hard_reject); _S.status="ended"; _S.endReason="hardReject"; ended=true;
+  } else if(_isGiveUp(text)&&ph>=2){
+    // Rep says goodbye/gives up — Ethan is confused then line goes dead
+    reply=_pick(["Hello? You still there?","Ok... bye then.","Uh... ok. Bye."]);
+    _S.status="ended"; _S.endReason="repGaveUp"; ended=true;
+  } else if(f.tooPersonal){
+    _S.warmth=0; reply=_pick(["That's too personal for a cold call.","I'm not comfortable sharing that. Goodbye.","Please don't ask that kind of question."]);
+    _S.status="ended"; _S.endReason="hardReject"; ended=true;
+  } else if(_S.warmth<=0){
+    reply=_pick(POOLS.hard_reject); _S.status="ended"; _S.endReason="hardReject"; ended=true;
+  } else if(_S.turn>_S.maxTurns){
+    reply="I have to run — we've been going a while. Thanks for calling."; _S.status="ended"; _S.endReason="timeout"; ended=true;
+  }
+
+  if(!ended){
+    /* PHASE 1 */
+    if(ph===1){
+      // If identity was established in a previous turn, treat this turn as having identity
+      var hasId = f.hasIdentity || _S.established.identity;
+      var hasRe = f.hasReason || f.hasMicroReason || f.hasPermission || _S.established.reason || _S.established.permission;
+
+      if(f.hasPitch||f.hasFear){
+        reply=_pickNo(POOLS.s1_bad,_S.lastReply);
+        if(_S.warmth<=10){_S.status="ended";_S.endReason="hardReject";ended=true;}
+      } else if(hasId && hasRe){
+        // Full opener — advance to Phase 2
+        _S.phase=2; _S.lastBkt=null;
+        // 70% of the time Ethan exits immediately — realistic cold call behaviour
+        if(!_S.earlyExitFired && Math.random() < 0.70){
+          _S.earlyExitFired=true; _S.phase=3; _S.state="EARLY_EXIT"; _S.waitingForObj=true;
+          reply=_pickNo(POOLS.obj_early,_S.lastReply);
+          hint=HINTS.pi_use; hintKey="pi_use";
+        } else {
+          // Smooth call — Ethan stays on
+          reply=_pickMemory(POOLS.p2_entry,_S.lastReply);
+          hint=HINTS.s2_noObs; hintKey="s2_noObs";
+        }
+      } else if(hasId){
+        // Has identity but needs reason/permission — use non-identity-asking replies
+        reply=_pickMemory(POOLS.p2_entry,_S.lastReply);
+        hint=HINTS.s1_hasId; hintKey="s1_hasId";
+      } else {
+        // No identity yet
+        reply=_pickMemory(POOLS.s1_weak,_S.lastReply);
+        hint=HINTS.s1_weak; hintKey="s1_weak";
+      }
+      if(!ended){ _markEstablished(f, reply); _markAskedAbout(reply); }
+
+    /* PHASE 2 */
+    } else if(ph===2){
+      if(f.hasPitch||f.hasFear){
+        reply=_pickNo(POOLS.s2_bad,_S.lastReply);
+        hint=HINTS.s2_pitch; hintKey="s2_pitch";
+        if(_S.warmth<=10){_S.status="ended";_S.endReason="hardReject";ended=true;}
+      } else {
+        // Carry forward established facts from prior turns
+        if(f.hasReason||f.hasMicroReason||_S.established.reason) _S.reasonSeen=true;
+        if(f.hasLightQ) _S.questionSeen=true;
+
+        if(_S.reasonSeen&&_S.questionSeen){
+          _S.phase=3; _S.waitingForObj=true; _S.lastBkt=null;
+          var hooked=f.hasCompanyHook||f.hasHeadstartFrame||f.hasIndependenceFrame||f.hasOptionsFrame;
+          reply=hooked&&_S.warmth>=28?_pickNo(POOLS.s2_hooked,_S.lastReply):_pickNo(POOLS.obj_inject,_S.lastReply);
+          _S.state="ACK"; _S.objStep="ack";
+          // Ethan is about to push back — prime rep for the pattern interrupt
+          hint=HINTS.pi_use; hintKey="pi_use";
+        } else if(!_S.reasonSeen){
+          // Rep hasn't given a hook — nudge
+          reply=_pickMemory(POOLS.s2_noObs,_S.lastReply);
+          // If Ethan's reply was identity-asking, coaching card should address that first
+          if(_S.askedAbout.whoIsThis){
+            hint=HINTS.s1_hasId; hintKey="s1_hasId";
+          } else {
+            hint=HINTS.s2_noObs; hintKey="s2_noObs";
+          }
+        } else {
+          // Has reason but no question — nudge toward a question
+          reply=_pickMemory(POOLS.s2_noQ,_S.lastReply); hint=HINTS.s2_noQ; hintKey="s2_noQ";
+        }
+        if(!ended&&!_S.earlyExitFired){
+          _S.earlyExitFired=true; _S.phase=3; _S.waitingForObj=true;
+          // If rep already used PI in same turn, skip EARLY_EXIT and open PI_WINDOW directly
+          if(f.hasPatternInterrupt||f.hasAck){
+            _S.state="PI_WINDOW"; _S.piHandled=true;
+            reply=_pickMemory(POOLS.pi_window,_S.lastReply);
+            hint=HINTS.pi_window; hintKey="pi_window";
+          } else {
+            _S.state="EARLY_EXIT"; _S.lastBkt=null;
+            reply=_pickNo(POOLS.obj_early,_S.lastReply);
+            hint=HINTS.pi_use; hintKey="pi_use";
+          }
+        }
+        if(!ended){ _markEstablished(f, reply); _markAskedAbout(reply); }
+        if(f.hasWrongLang){ hint=HINTS.wrong_lang; hintKey="wrong_lang"; }
+      }
+
+    /* PHASE 3 */
+    } else if(ph===3&&_S.waitingForObj){
+      if(st==="EARLY_EXIT"){
+        if(f.hasPatternInterrupt||f.hasReschedule){
+          _S.piHandled=true; _S.state="PI_WINDOW";
+          if(f.hasReschedule&&!f.hasPatternInterrupt) _S.warmth=Math.max(0,_S.warmth-8);
+          reply=_pickMemory(POOLS.pi_window,_S.lastReply);
+          hint=HINTS.pi_window; hintKey="pi_window";
+        } else if(f.hasReframe||(f.hasMeet&&!f.hasAck)){
+          _S.earlyExitMissed=true;
+          critical="Ethan signalled he wanted to move on. Before launching into a full response, consider what a lighter touch might look like at this moment.";
+          reply=_pickMemory(POOLS.pi_missed,_S.lastReply); _S.state="ACK";
+          hint=HINTS.pi_use; hintKey="pi_use";
+        } else if(f.hasAck&&!f.hasReframe){
+          _S.state="PI_WINDOW"; reply=_pickMemory(POOLS.pi_window,_S.lastReply);
+          hint=HINTS.pi_window; hintKey="pi_window";
+        } else {
+          _S.earlyExitIgnored=true;
+          critical="Ethan said he wasn't interested. That signal needed to be acknowledged before continuing.";
+          reply=_pickMemory(POOLS.pi_ignored,_S.lastReply);
+          _S.warmth=Math.max(0,_S.warmth-6);
+          hint=HINTS.pi_ignored; hintKey="pi_ignored";
+          if(_S.warmth<=5){_S.status="ended";_S.endReason="hardReject";ended=true;}
+        }
+      } else if(f.hasPitch||f.hasFear){
+        reply=_pickNo(POOLS.s3_exit,_S.lastReply);
+        if(_S.warmth<=15){_S.status="ended";_S.endReason="hardReject";ended=true;}
+      } else if(st==="PI_WINDOW"){
+        var eth=f.hasCompanyHook||f.hasHeadstartFrame||f.hasIndependenceFrame||f.hasOptionsFrame;
+        // Full close: reframe/meet + timebox + two options — advance to Phase 4
+        if((f.hasMeet||f.hasReframe)&&f.hasTimebox&&f.hasTwoOptions){
+          _S.phase=4; _S.state="";
+          var pioc=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=pioc; ended=true;
+          reply=pioc==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):pioc==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
+        // Track B compressed: rep gave reason+hook inside window — move to REFRAME for close
+        } else if((f.hasReason||f.hasMicroReason||eth)&&(f.hasLightQ||f.hasMeet||f.hasReframe)){
+          _S.phase=3; _S.state="REFRAME"; _S.objStep="reframe";
+          _S.reasonSeen=true;
+          reply=_pickMemory(POOLS.s3_needsRfm,_S.lastReply);
+          hint=HINTS.s3_reframe; hintKey="s3_reframe";
+        // Mid-call WhatsApp — soft exit, recoverable
+        } else if(f.hasReschedule&&!f.hasPatternInterrupt){
+          _S.warmth=Math.max(0,_S.warmth-5);
+          reply=_pickMemory(POOLS.pi_missed,_S.lastReply);
+          hint=HINTS.pi_window; hintKey="pi_window";
+        } else if(eth&&(f.hasLightQ||f.hasReason||f.hasMicroReason)){
+          _S.phase=3; _S.state="REFRAME"; _S.objStep="reframe";
+          reply=_pickMemory(POOLS.s3_needsRfm,_S.lastReply);
+          hint=HINTS.s3_reframe; hintKey="s3_reframe";
+        } else if(eth){
+          _S.phase=3; _S.state="ACK"; _S.objStep="ack";
+          reply=_pickMemory(POOLS.obj_inject,_S.lastReply);
+          hint=HINTS.s3_ack; hintKey="s3_ack";
+        } else {
+          // Wasted PI window — rep got a moment but didn't use it for the ask
+          _S.warmth=Math.max(0,_S.warmth-10);
+          if(I.wordCount>40){ _S.lectureDetected=true; _S.warmth=Math.max(0,_S.warmth-6); }
+          reply=_pickMemory(POOLS.pi_missed,_S.lastReply); _S.state="ACK"; _S.objStep="ack";
+          hint=HINTS.pi_window; hintKey="pi_window";
+          if(_S.warmth<=8){_S.status="ended";_S.endReason="hardReject";ended=true;}
+        }
+      } else if(st==="ACK"){
+        if(f.hasAck){
+          _S.objStep="reframe"; _S.state="REFRAME";
+          reply=_pickMemory(POOLS.s3_needsRfm,_S.lastReply);
+          hint=HINTS.s3_reframe; hintKey="s3_reframe";
+        } else {
+          reply=_pickMemory(POOLS.s3_needsAck,_S.lastReply); hint=HINTS.s3_ack; hintKey="s3_ack";
+        }
+      } else if(st==="REFRAME"){
+        var isLec=I.wordCount>40&&!f.hasPatternInterrupt&&!f.hasHeadstartFrame&&!f.hasIndependenceFrame;
+        if(f.hasWrongLang){
+          reply=_pickNo(POOLS.s3_wrongLang,_S.lastReply);
+          critical="Some of that language may not have connected with Ethan. Think about what actually has an anchor for someone at his life stage.";
+          hint=HINTS.wrong_lang; hintKey="wrong_lang";
+        } else if(isLec){
+          _S.lectureDetected=true; _S.warmth=Math.max(0,_S.warmth-6);
+          reply=_pickNo(POOLS.s3_lectured,_S.lastReply);
+          critical="That response was quite detailed. With Ethan, shorter and more direct tends to work better.";
+        } else if((f.hasReframe&&f.hasMeet)||(f.hasReframe&&f.hasTimebox&&f.hasTwoOptions)){
+          if(f.hasTimebox&&f.hasTwoOptions){
+            _S.phase=4; _S.state="";
+            var oc=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=oc; ended=true;
+            reply=oc==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):oc==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
+          } else {
+            _S.objCycles++;
+            if(_S.objCycles<_S.maxObjCycles){
+              _S.state="ACK"; _S.objStep="ack";
+              reply=_pickMemory(POOLS.obj_inject,_S.lastReply);
+            } else {
+              _S.phase=4; _S.waitingForObj=false; _S.state=null;
+              reply=_pickMemory(POOLS.s3_cleared,_S.lastReply);
+            }
+          }
+        } else if(f.hasMeet&&f.hasTimebox&&!f.hasReframe){
+          reply=_pickMemory(POOLS.s4_noOptions,_S.lastReply); hint=HINTS.s4_options; hintKey="s4_options";
+        } else if(f.hasMeet&&!f.hasReframe){
+          reply=_pickMemory(POOLS.s4_noTimebox,_S.lastReply); hint=HINTS.s4_timebox; hintKey="s4_timebox";
+        } else if(f.hasReframe){
+          reply=_pickMemory(POOLS.s3_noAsk,_S.lastReply); hint=HINTS.s3_noask; hintKey="s3_noask";
+        } else if(f.hasAck){
+          reply=_pickMemory(POOLS.s3_needsRfm,_S.lastReply); hint=HINTS.s3_reframe; hintKey="s3_reframe";
+        } else {
+          // Off-script or unclear — neutral hold, don't loop back to confusion
+          reply=_pickMemory(POOLS.s3_needsAck,_S.lastReply); hint=HINTS.s3_ack; hintKey="s3_ack";
+        }
+      }
+      if(!ended) _markAskedAbout(reply);
+
+    /* PHASE 4 */
+    } else if(ph===4){
+      if(f.hasPitch||f.hasFear){
+        reply=_pickNo(POOLS.s3_exit,_S.lastReply);
+        if(_S.warmth<=20){_S.status="ended";_S.endReason="hardReject";ended=true;}
+      } else if(f.hasMeet&&f.hasTimebox&&f.hasTwoOptions){
+        var cr=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=cr; ended=true;
+        reply=cr==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):cr==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
+      } else {
+        _S.p4FollowUps++;
+        if(_S.p4FollowUps>=2){
+          var hasEnough = f.hasMeet&&(f.hasTimebox||f.hasTwoOptions);
+          var fc = _roll(hasEnough?_S.warmth:_S.warmth-20, hasEnough?"perfect":"partial");
+          _S.status="ended"; _S.endReason=fc; ended=true;
+          reply=fc==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):fc==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
+        } else if(f.hasMeet&&f.hasTimebox){
+          reply=_pickMemory(POOLS.s4_noOptions,_S.lastReply); hint=HINTS.s4_options; hintKey="s4_options";
+        } else if(f.hasMeet){
+          reply=_pickMemory(POOLS.s4_noTimebox,_S.lastReply); hint=HINTS.s4_timebox; hintKey="s4_timebox";
+        } else {
+          reply=_pickMemory(POOLS.s4_noOptions,_S.lastReply); hint=HINTS.s4_options; hintKey="s4_options";
+        }
+        if(!ended) _markAskedAbout(reply);
+      }
+    }
+  }
+
+  if(!ended) _S.turn++;
+
+  // ── Reply-type classifier — update hint based on engine state ──
+  // Runs before Gemini call so hint is ready immediately
+  if(_mode === "foundation" && !ended && _S.phase >= 2){
+    var _engineSpecific = (hintKey === "wrong_lang" || hintKey === "s2_pitch" || hintKey === "pi_ignored");
+    if(!_engineSpecific && hint === ""){
+      // fallback hint based on state
+      if(_S.state === "EARLY_EXIT") { hint = HINTS.pi_use; hintKey = "pi_use"; }
+      else if(_S.state === "PI_WINDOW") { hint = HINTS.pi_window; hintKey = "pi_window"; }
+      else if(_S.state === "ACK") { hint = HINTS.s3_ack; hintKey = "s3_ack"; }
+      else if(_S.state === "REFRAME") { hint = HINTS.s3_reframe; hintKey = "s3_reframe"; }
+    }
+  }
+
+  var situation = _situationLabel(_S.phase, _S.state);
+  return {hint:hint, hintKey:hintKey||"", critical:critical, ended:ended, warmth:_S.warmth, phase:_S.phase, state:_S.state, situation:situation};
+}
+
+/* ── ASYNC TURN — wraps _doTurn and calls Gemini for reply ── */
+async function _doTurnAsync(text){
+  var result = _doTurn(text);
+  if(!result) return null;
+
+  // Get Gemini reply
+  var aiReply = await _geminiReply(result.situation, text);
+
+  // Fallback to pool if Gemini fails
+  if(!aiReply){
+    var fallbackPools = {
+      "EARLY_EXIT": POOLS.obj_early,
+      "PI_WINDOW":  POOLS.pi_window,
+      "ACK":        POOLS.s3_needsAck,
+      "REFRAME":    POOLS.s3_needsRfm
+    };
+    var fb = fallbackPools[result.state] || POOLS.p2_entry;
+    aiReply = _pickNo(fb, _S.lastReply);
+  }
+
+  // Update reply-type classifier hint based on what Gemini actually said
+  if(_mode === "foundation" && !result.ended && _S.phase >= 2){
+    var _rtype = _classifyEthanReply(aiReply);
+    var _engineSpecific = (result.hintKey === "wrong_lang" || result.hintKey === "s2_pitch" || result.hintKey === "pi_ignored");
+    if(_rtype !== REPLY_TYPES.GENERAL && !_engineSpecific){
+      var _mapped = REPLY_HINT_MAP[_rtype];
+      if(_mapped){ result.hint = _mapped.hint; result.hintKey = _mapped.key; }
+    }
+  }
+
+  _S.lastReply = aiReply;
+  _S.transcript.push({role:"prospect", text:aiReply, turn:_S.turn});
+  result.reply = aiReply;
+  return result;
+}
+
+
+/* ── DEBRIEF BUILDER ── */
+function _buildDebrief(){
+  var s=_S, er=s.endReason;
+  var icon, label, sub, read, tip;
+  if(er==="accept")          {icon="✅"; label="Appointment booked"; sub="Ethan agreed to meet.";}
+  else if(er==="delay")      {icon="🟡"; label="Ethan asked for a follow-up"; sub="No confirmed time yet.";}
+  else if(er==="softReject") {icon="🔴"; label="Ethan passed for now"; sub="He wasn't ready to commit.";}
+  else if(er==="repGaveUp")  {icon="🏳️"; label="Call abandoned"; sub="The rep ended the call before a booking.";}
+  else if(er==="hardReject") {icon="❌"; label="Ethan ended the call"; sub="The call didn't find its footing.";}
+  else                       {icon="⏱"; label="Call ran too long"; sub="Too many turns without a close.";}
+
+  if(er==="repGaveUp"){ read="The call was going somewhere but was cut short before a booking. Ethan was still engaging — he just needed a cleaner close. When the prospect is asking follow-up questions, that's a buying signal, not a rejection."; tip="When a prospect keeps asking about timing and duration, they are interested — they just need a simple, direct answer and a specific ask. Next time, stay in the call a little longer and commit to a clear close."; }
+  else if(s.pitchDetected||s.fearDetected){ read=DBF.reads.pitch; tip=DBF.tips.pitch; }
+  else if(er==="hardReject"&&s.earlyExitIgnored){ read=DBF.reads.early_exit; tip=DBF.tips.early_exit_ignored; }
+  else if(er==="hardReject"&&(s.earlyExitMissed||s.earlyExitFired)){ read=DBF.reads.early_exit; tip=DBF.tips.early_exit_missed; }
+  else if(er==="hardReject"&&s.lectureDetected){ read=DBF.reads.lectured; tip=DBF.tips.lectured; }
+  else if(er==="hardReject"){ read=DBF.reads.hard_end; tip=DBF.tips.hard_end; }
+  else if(s.wrongLangCount>=2&&er!=="accept"){ read=DBF.reads.wrong_lang; tip=DBF.tips.wrong_lang; }
+  else if(s.lectureDetected&&er!=="accept"){ read=DBF.reads.lectured; tip=DBF.tips.lectured; }
+  else if(s.earlyExitMissed&&er!=="accept"){ read=DBF.reads.early_exit; tip=DBF.tips.early_exit_missed; }
+  else if(er==="delay"){ read=DBF.reads.whatsapp; tip=DBF.tips.whatsapp; }
+  else if(er==="softReject"){ read=DBF.reads.booked_bumpy; tip=DBF.tips.vague_close; }
+  else if(er==="accept"&&s.turn<=5){ read=DBF.reads.booked_clean; tip=DBF.tips.clean_call; }
+  else if(er==="accept"){ read=DBF.reads.booked_bumpy; tip=DBF.tips.clean_call; }
+  else{ read=DBF.reads.hard_end; tip=DBF.tips.hard_end; }
+
+  return {icon:icon, label:label, sub:sub, read:read, tip:tip};
+}
+
+/* ================================================================
+   LAYER 3 — UI
+================================================================ */
+var UI = (function(){
+
+  function _show(id){
+    document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
+    document.getElementById(id).classList.add("active");
+  }
+
+  function _addBubble(role, text){
+    var msgs = document.getElementById("chat-messages");
+    var row  = document.createElement("div");
+    row.className = "bubble-row " + (role==="rep"?"right":"left");
+    var bub  = document.createElement("div");
+    bub.className = "bubble " + (role==="rep"?"user":"prospect");
+    var tag  = document.createElement("span");
+    tag.className = "bubble-tag";
+    tag.textContent = role==="rep" ? "YOU" : "ETHAN";
+    bub.appendChild(tag);
+    bub.appendChild(document.createTextNode(text));
+    row.appendChild(bub);
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+    return bub;  // returned so voice can animate the bubble
+  }
+
+  var _currentHintKey = "s1_weak"; // tracks which coaching card to show
+
+  function _setHint(text, isCrit, hintKey){
+    var hintBar = document.getElementById("hint-bar");
+    var critBar = document.getElementById("crit-bar");
+    var hintTxt = document.getElementById("hint-text");
+    var critTxt = document.getElementById("crit-text");
+
+    // Critical alerts always show regardless of mode
+    if(isCrit && text){
+      critTxt.textContent = text;
+      critBar.style.display = "flex";
+    } else {
+      critBar.style.display = "none";
+    }
+
+    // Hints only show in foundation mode
+    if(!isCrit && text && _mode==="foundation"){
+      hintTxt.textContent = text;
+      if(hintKey) _currentHintKey = hintKey;
+      hintBar.classList.remove("hidden");
+    } else if(!isCrit){
+      if(_mode!=="foundation") hintBar.classList.add("hidden");
+    }
+  }
+
+
+  function _updateMeta(){
+    if(!_S) return;
+    var mode = _mode.charAt(0).toUpperCase()+_mode.slice(1);
+    document.getElementById("topbar-meta").textContent = mode+" · Turn "+_S.turn;
+    document.getElementById("stage-label").textContent = _stageLabel(_S.phase, _S.state);
+  }
+
+  return {
+
+    selectPersona: function(id){
+      document.querySelectorAll(".persona-pick-card:not(.disabled)").forEach(function(c){ c.classList.remove("selected"); });
+      document.getElementById("persona-"+id).classList.add("selected");
+      _selectedPersona = id;
+    },
+
+    setMode: function(m){
+      _mode = m;
+      document.getElementById("seg-foundation").classList.toggle("active", m==="foundation");
+      document.getElementById("seg-advanced").classList.toggle("active", m==="advanced");
+      document.getElementById("mode-helper").textContent = m==="foundation"
+        ? "Coaching hints shown after each reply. Best for learning how to handle each situation."
+        : "No hints during the call. Handle each situation on your own.";
+    },
+
+    goToBrief: function(){
+      _show("screen-brief");
+    },
+
+    backToStart: function(){
+      _show("screen-start");
+    },
+
+    openCoachingCard: function(){
+      var key = _currentHintKey;
+      var card = COACHING[key];
+      if(!card) return;
+
+      document.getElementById("coaching-stage").textContent = card.stage;
+      document.getElementById("coaching-principle").textContent = card.principle;
+      document.getElementById("coaching-why").textContent = card.why || "";
+      document.getElementById("coaching-avoid").textContent = card.avoid;
+
+      document.getElementById("coaching-backdrop").classList.add("open");
+      document.getElementById("coaching-sheet").classList.add("open");
+    },
+
+    closeCoachingCard: function(){
+      document.getElementById("coaching-backdrop").classList.remove("open");
+      document.getElementById("coaching-sheet").classList.remove("open");
+    },
+
+    toggleMic: function(){
+      MicController.toggle();
+    },
+
+    startSession: function(){
+      MicController.deactivate();
+      VoiceRenderer.stop();
+      UI.closeCoachingCard();
+
+      // IMPORTANT: Unlock speechSynthesis NOW while we're inside the user gesture (button tap).
+      // Mobile browsers (iOS/Android) block TTS that fires outside a direct user interaction.
+      // Speaking a silent utterance here primes the engine so the delayed first line works.
+      if(window.speechSynthesis){
+        var primer = new SpeechSynthesisUtterance(" ");
+        primer.volume = 0;
+        primer.rate   = 1;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(primer);
+      }
+
+      _initSession();
+      document.getElementById("chat-messages").innerHTML = "";
+      document.getElementById("msg-input").value = "";
+      document.getElementById("msg-input").style.height = "auto";
+      document.getElementById("send-btn").disabled = true;
+
+      // Set hint bar visibility based on mode
+      var hintBar = document.getElementById("hint-bar");
+      if(_mode==="foundation"){
+        hintBar.classList.remove("hidden");
+        document.getElementById("hint-text").textContent = "Introduce yourself, give a brief reason for calling, and ask for 20 seconds.";
+      } else {
+        hintBar.classList.add("hidden");
+      }
+      document.getElementById("crit-bar").style.display = "none";
+      _updateMeta();
+      _show("screen-practice");
+
+      // Show calling overlay + ringback tone for 3.5s, then prospect picks up
+      var emoji = _selectedPersona === "ethan" ? "👨‍💻" : "👨‍💼";
+      var pname = _selectedPersona === "ethan" ? "Ethan" : "Patrick";
+      CallingTone.play(emoji, pname, 3500, function(){
+        var pool = POOLS["s1_"+_S.bt];
+        var first = _pick(pool);
+        _S.lastReply = first;
+        _S.transcript.push({role:"prospect", text:first, turn:0});
+        var firstBubble = _addBubble("prospect", first);
+        VoiceRenderer.speak(first, _S.warmth, firstBubble);
+        setTimeout(function(){
+          document.getElementById("send-btn").disabled = false;
+          if(!MicController.isActive()) document.getElementById("msg-input").focus();
+        }, 400);
+      });
+    },
+
+    sendMessage: async function(){
+      var inp  = document.getElementById("msg-input");
+      var text = inp.value.trim();
+      if(!text || !_S || _S.status!=="active") return;
+      inp.value = ""; inp.style.height = "auto";
+      inp.classList.remove("mic-interim");
+      document.getElementById("send-btn").disabled = true;
+      document.getElementById("crit-bar").style.display = "none";
+
+      _addBubble("rep", text);
+      _updateMeta();
+
+      // Block mic while Ethan replies
+      MicController.block();
+
+      // Show typing indicator
+      var typingBubble = _addBubble("prospect", "…");
+      typingBubble.style.opacity = "0.5";
+
+      var result = await _doTurnAsync(text);
+
+      // Remove typing indicator
+      typingBubble.remove();
+
+      if(!result) {
+        document.getElementById("send-btn").disabled = false;
+        MicController.unblock();
+        return;
+      }
+
+      var prospectBubble = _addBubble("prospect", result.reply);
+      _updateMeta();
+
+      // Show critical alert if present
+      if(result.critical){
+        _setHint(result.critical, true);
+      } else {
+        document.getElementById("crit-bar").style.display = "none";
+      }
+
+      // Show hint only in foundation mode
+      if(result.hint && !result.critical && _mode==="foundation"){
+        _setHint(result.hint, false, result.hintKey);
+      }
+
+      if(result.ended){
+        MicController.deactivate();
+        document.getElementById("send-btn").disabled = true;
+        VoiceRenderer.speakThen(result.reply, result.warmth, prospectBubble, function(){
+          CallingTone.endCall(function(){
+            setTimeout(function(){ UI.showResult(); }, 400);
+          });
+        });
+      } else {
+        VoiceRenderer.speakThen(result.reply, result.warmth, prospectBubble, function(){
+          document.getElementById("send-btn").disabled = false;
+          MicController.unblock();
+          if(!MicController.isActive()){
+            document.getElementById("msg-input").focus();
+          }
+        });
+      }
+    },
+
+    endSession: async function(){
+      if(!_S) return;
+      MicController.deactivate();
+      VoiceRenderer.stop();
+      _S.status    = "ended";
+      _S.endReason = "hardReject";
+      CallingTone.endCall(function(){ UI.showResult(); });
+    },
+
+    showResult: async function(){
+      VoiceRenderer.stop();
+      var d = _buildDebrief(); // still used for outcome icon/label/sub
+
+      document.getElementById("result-icon").textContent  = d.icon;
+      document.getElementById("result-title").textContent = d.label;
+      document.getElementById("result-sub").textContent   = d.sub;
+
+      // Build transcript
+      var box = document.getElementById("tr-box");
+      box.innerHTML = "";
+      box.classList.remove("open");
+      document.querySelector(".tr-toggle").textContent = "Show transcript ▾";
+      (_S.transcript||[]).forEach(function(ln){
+        var div = document.createElement("div");
+        div.className = "tr-line";
+        var sp = document.createElement("span");
+        sp.className = ln.role==="rep" ? "tr-rep" : "tr-pro";
+        sp.textContent = ln.role==="rep" ? "You: " : "Ethan: ";
+        div.appendChild(sp);
+        div.appendChild(document.createTextNode(ln.text));
+        box.appendChild(div);
+      });
+
+      _show("screen-result");
+
+      // Show loading state while AI debrief generates
+      document.getElementById("debrief-loading").style.display = "flex";
+      document.getElementById("debrief-content").style.display = "none";
+      document.getElementById("debrief-fallback").style.display = "none";
+
+      var flags = {
+        earlyExitIgnored: _S.earlyExitIgnored,
+        earlyExitMissed: _S.earlyExitMissed,
+        pitchDetected: _S.pitchDetected,
+        lectureDetected: _S.lectureDetected,
+        wrongLangCount: _S.wrongLangCount,
+        turns: _S.turn,
+        warmth: _S.warmth
+      };
+
+      var aiDebrief = await _geminiDebrief(d.label, flags);
+
+      document.getElementById("debrief-loading").style.display = "none";
+
+      if(aiDebrief){
+        // Summary
+        document.getElementById("debrief-summary").textContent = aiDebrief.summary || d.read;
+
+        // Strengths
+        if(aiDebrief.strengths && aiDebrief.strengths.length > 0){
+          var sl = document.getElementById("debrief-strengths");
+          sl.innerHTML = "";
+          aiDebrief.strengths.forEach(function(s){
+            var li = document.createElement("li");
+            li.textContent = s;
+            sl.appendChild(li);
+          });
+          document.getElementById("debrief-strengths-card").style.display = "block";
+        }
+
+        // Turn-by-turn moments
+        var momentsEl = document.getElementById("debrief-moments");
+        momentsEl.innerHTML = "";
+        if(aiDebrief.moments && aiDebrief.moments.length > 0){
+          aiDebrief.moments.forEach(function(m){
+            var card = document.createElement("div");
+            card.className = "moment-card";
+
+            var turn = document.createElement("div");
+            turn.className = "moment-turn";
+            turn.textContent = "You said: \"" + m.turn + "\"";
+            card.appendChild(turn);
+
+            var body = document.createElement("div");
+            body.className = "moment-body";
+
+            // Support both old (what_happened/impact) and new (issue) field names
+            var issueText = m.issue || [m.what_happened, m.impact].filter(Boolean).join(" — ");
+            if(issueText){
+              var r = document.createElement("div");
+              r.className = "moment-row";
+              var lbl = document.createElement("span");
+              lbl.className = "moment-label";
+              lbl.textContent = "What went wrong";
+              r.appendChild(lbl);
+              r.appendChild(document.createTextNode(issueText));
+              body.appendChild(r);
+            }
+
+            if(m.better){
+              var better = document.createElement("div");
+              better.className = "moment-row moment-better";
+              var lbl2 = document.createElement("span");
+              lbl2.className = "moment-label";
+              lbl2.textContent = "Try instead";
+              better.appendChild(lbl2);
+              better.appendChild(document.createTextNode(m.better));
+              body.appendChild(better);
+            }
+
+            card.appendChild(body);
+            momentsEl.appendChild(card);
+          });
+        } else {
+          momentsEl.textContent = "No specific moments flagged.";
+        }
+
+        // Improvements
+        if(aiDebrief.improvements && aiDebrief.improvements.length > 0){
+          var il = document.getElementById("debrief-improvements");
+          il.innerHTML = "";
+          aiDebrief.improvements.forEach(function(imp){
+            var li = document.createElement("li");
+            li.textContent = imp;
+            il.appendChild(li);
+          });
+          document.getElementById("debrief-improvements-card").style.display = "block";
+        }
+
+        // Next call tip
+        document.getElementById("debrief-tip").textContent = "Next call: " + (aiDebrief.next_call_tip || d.tip);
+
+        document.getElementById("debrief-content").style.display = "block";
+
+      } else {
+        // AI failed — show fallback rule-based debrief
+        document.getElementById("coach-read").textContent = d.read;
+        document.getElementById("coach-tip").textContent  = d.tip;
+        document.getElementById("debrief-fallback").style.display = "block";
+      }
+    },
+
+    retrySession: function(){
+      _show("screen-brief");
+    },
+
+    downloadPDF: function(){
+      if(!_S) return;
+      var d = _buildDebrief();
+      var date = new Date().toLocaleDateString("en-SG", {year:"numeric",month:"long",day:"numeric"});
+      var modeLabel = _mode.charAt(0).toUpperCase()+_mode.slice(1);
+
+      // Build transcript rows
+      var trRows = "";
+      (_S.transcript||[]).forEach(function(ln){
+        var who   = ln.role==="rep" ? "You" : "Ethan";
+        var color = ln.role==="rep" ? "#0d47a1" : "#059669";
+        trRows += "<tr><td style='padding:5px 10px 5px 0;font-weight:700;white-space:nowrap;vertical-align:top;color:"+color+"'>"+who+"</td>"
+                + "<td style='padding:5px 0;line-height:1.5;'>"+ln.text+"</td></tr>";
+      });
+
+      var html = [
+        "<!DOCTYPE html><html><head><meta charset='utf-8'><title>APPT.COACH Report</title>",
+        "<style>",
+        "body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:32px 40px;color:#111827;max-width:680px;}",
+        "h1{font-size:22px;font-weight:900;color:#0d47a1;margin:0 0 2px;}",
+        "h2{font-size:13px;font-weight:700;color:#6b7280;margin:0 0 6px;}",
+        ".meta{font-size:12px;color:#9ca3af;margin-bottom:24px;}",
+        ".outcome{background:#f0f1f5;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:24px;}",
+        ".o-icon{font-size:30px;}.o-label{font-size:17px;font-weight:900;}.o-sub{font-size:12px;color:#6b7280;margin-top:2px;}",
+        ".stitle{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:#6b7280;margin-bottom:8px;}",
+        ".read{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:13px 15px;font-size:14px;line-height:1.65;color:#78350f;margin-bottom:12px;}",
+        ".tip{background:#eaf2ff;border-left:4px solid #0d47a1;border-radius:6px;padding:12px 15px;font-size:14px;line-height:1.65;color:#0d47a1;margin-bottom:24px;}",
+        ".tr-table{width:100%;border-collapse:collapse;font-size:13px;}",
+        ".tr-table td{border-bottom:1px solid #e4e6eb;padding:5px 0;}",
+        "@media print{body{padding:20px 28px;}}",
+        "</style></head><body>",
+        "<h1>APPT.COACH</h1><h2>Practice Report</h2>",
+        "<div class='meta'>"+date+" &nbsp;&middot;&nbsp; Prospect: Ethan &nbsp;&middot;&nbsp; Mode: "+modeLabel+"</div>",
+        "<div class='outcome'><div class='o-icon'>"+d.icon+"</div><div><div class='o-label'>"+d.label+"</div><div class='o-sub'>"+d.sub+"</div></div></div>",
+        "<div class='stitle'>How the call went</div>",
+        "<div class='read'>"+d.read+"</div>",
+        "<div class='tip'>"+d.tip+"</div>",
+        "<div class='stitle'>Conversation transcript</div>",
+        "<table class='tr-table'><tbody>"+trRows+"</tbody></table>",
+        "</body></html>"
+      ].join("");
+
+      var blob = new Blob([html], {type:"text/html"});
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement("a");
+      a.href     = url;
+      a.download = "apptcoach-"+new Date().toISOString().slice(0,10)+".html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    },
+
+    toggleTranscript: function(){
+      var box = document.getElementById("tr-box");
+      var tog = document.querySelector(".tr-toggle");
+      box.classList.toggle("open");
+      tog.textContent = box.classList.contains("open") ? "Hide transcript ▴" : "Show transcript ▾";
+    },
+
+    openTips: function(key){
+      var c = TIPS_CONTENT[key];
+      if(!c) return;
+      document.getElementById("tips-title").textContent = c.title;
+      document.getElementById("tips-body").textContent  = c.body;
+      document.getElementById("modal-backdrop").classList.add("open");
+      document.getElementById("tips-modal").classList.add("open");
+    },
+
+    closeTips: function(){
+      document.getElementById("modal-backdrop").classList.remove("open");
+      document.getElementById("tips-modal").classList.remove("open");
+    }
+  };
+})();
+
+/* ── VOICE RENDERER ── */
+var VoiceRenderer = (function(){
+
+  // ── Voice Profile: Ethan (24, Junior Engineer) ──────────────
+  var PROFILES = {
+    ethan: {
+      // 1.12 = slightly quick without sounding rushed
+      baseRate:       1.2,
+      rateVariance:   0.04,
+      // 1.0 = neutral default. Push slightly higher for younger quality.
+      // Key insight: don't go so high it becomes female — 1.05–1.1 is the male sweet spot.
+      basePitch:      1.05,
+      pitchVariance:  0.03,
+      volume:         0.92,
+      delayByTone: {
+        neutral: { min:280, max:500 },
+        guarded: { min:140, max:300 },
+        curt:    { min:60,  max:140 }
+      },
+      lang: "en-US"
+    }
+  };
+
+  // ── Score a voice for "young male" quality ────────────────
+  // Higher score = better fit. Returns 0 if female indicators present.
+  function _maleScore(v){
+    var n = v.name.toLowerCase();
+    // Hard exclude: known female names / indicators
+    var femaleTerms = ["female","woman","girl","zira","hazel","susan","karen","victoria",
+      "samantha","lisa","kate","fiona","moira","tessa","nicky","serena","google uk english female",
+      "microsoft zira","microsoft hazel","microsoft susan"];
+    for(var i=0;i<femaleTerms.length;i++) if(n.indexOf(femaleTerms[i])>=0) return 0;
+
+    var score = 1;
+    // Prefer: known male names / indicators
+    var maleTerms = ["male","man","guy","david","james","mark","daniel","aaron","fred",
+      "lee","google uk english male","microsoft david","microsoft mark","microsoft george",
+      "google us english"];
+    for(var i=0;i<maleTerms.length;i++) if(n.indexOf(maleTerms[i])>=0) score += 10;
+
+    // Prefer network voices (Google) over local TTS (usually higher quality)
+    if(!v.localService) score += 3;
+
+    // Prefer these lang codes in order
+    if(v.lang === "en-SG") score += 8;
+    if(v.lang === "en-US") score += 5;
+    if(v.lang === "en-AU") score += 3;
+    if(v.lang === "en-GB") score += 1;
+    // Penalise Indian English (sounds Indian, not SG)
+    if(v.lang === "en-IN") score -= 5;
+
+    return score;
+  }
+
+  // ── State ─────────────────────────────────────────────────
+  var _enabled       = true;
+  var _speaking      = false;
+  var _voicesLoaded  = false;
+  var _selectedVoice = null;
+  var _currentBubble = null;
+  var _persona       = "ethan";
+  var _pendingSpeech = null;  // queued speech waiting for voices to load
+
+  // ── Debug hook (as per spec) ──────────────────────────────
+  window.APPTCOACH_voiceDebug = {
+    currentTone: "neutral",
+    currentRate: 1.22,
+    currentPitch: 1.35,
+    currentDelay: 0,
+    voiceName: ""
+  };
+
+  // ── Derive tone from engine warmth ───────────────────────
+  function _toneFromWarmth(w){
+    if(w >= 45) return "neutral";
+    if(w >= 20) return "guarded";
+    return "curt";
+  }
+
+  // ── Controlled randomness — stays within narrow range ────
+  function _jitter(base, variance){
+    return base + (Math.random() * variance * 2) - variance;
+  }
+
+  // ── Voice selection ───────────────────────────────────────
+  function _loadVoice(){
+    if(!window.speechSynthesis) return;
+    var voices = window.speechSynthesis.getVoices();
+    if(!voices.length) return;
+    _voicesLoaded = true;
+
+    var profile = PROFILES[_persona];
+    // Score all English voices and pick the highest male-scoring one
+    var englishVoices = voices.filter(function(v){ return v.lang.indexOf("en") === 0; });
+    if(!englishVoices.length){
+      _selectedVoice = voices[0];
+      window.APPTCOACH_voiceDebug.voiceName = _selectedVoice ? _selectedVoice.name : "system-default";
+      return;
+    }
+
+    var best = null, bestScore = -1;
+    englishVoices.forEach(function(v){
+      var s = _maleScore(v);
+      if(s > bestScore){ bestScore = s; best = v; }
+    });
+
+    // If no male voice found (all scored 0), fall back to any US/AU English
+    if(!best || bestScore === 0){
+      best = englishVoices.filter(function(v){ return v.lang==="en-US"||v.lang==="en-AU"; })[0]
+           || englishVoices[0];
+    }
+
+    _selectedVoice = best;
+    window.APPTCOACH_voiceDebug.voiceName = best ? best.name + " (score:"+bestScore+")" : "none";
+  }
+
+  // ── Cancel any current speech ─────────────────────────────
+  function _cancel(){
+    if(window.speechSynthesis) window.speechSynthesis.cancel();
+    _speaking = false;
+    if(_currentBubble) {
+      _currentBubble.classList.remove("speaking");
+      _currentBubble = null;
+    }
+  }
+
+  // ── Speak a reply ─────────────────────────────────────────
+  function _speak(text, warmth, bubbleEl, callback){
+    if(!_enabled || !window.speechSynthesis){
+      if(callback) callback();
+      return;
+    }
+
+    // If voices not loaded yet, queue and wait for voiceschanged
+    if(!_voicesLoaded){
+      _pendingSpeech = {text:text, warmth:warmth, bubbleEl:bubbleEl, callback:callback};
+      // Also try loading now — sometimes getVoices() is ready by the time speak is called
+      var v = window.speechSynthesis.getVoices();
+      if(v.length){ _loadVoice(); }
+      else { return; } // will be triggered by voiceschanged
+    }
+    // If voices just loaded in the line above, proceed
+    if(!_voicesLoaded){
+      _pendingSpeech = {text:text, warmth:warmth, bubbleEl:bubbleEl, callback:callback};
+      return;
+    }
+
+    // Always cancel previous before starting
+    _cancel();
+
+    if(!_voicesLoaded) _loadVoice();
+
+    var profile  = PROFILES[_persona];
+    var tone     = _toneFromWarmth(warmth);
+    var delayCfg = profile.delayByTone[tone];
+    var delay    = delayCfg.min + Math.random() * (delayCfg.max - delayCfg.min);
+    var rate     = _jitter(profile.baseRate, profile.rateVariance);
+    var pitch    = _jitter(profile.basePitch, profile.pitchVariance);
+
+    // Curt tone — faster delivery, slightly lower and flatter
+    if(tone === "curt"){
+      rate  += 0.06;
+      pitch -= 0.04;
+    }
+    // Guarded tone — measured, slightly slower
+    if(tone === "guarded"){
+      rate  -= 0.02;
+      pitch -= 0.02;
+    }
+
+    // Update debug hook
+    window.APPTCOACH_voiceDebug.currentTone  = tone;
+    window.APPTCOACH_voiceDebug.currentRate  = Math.round(rate * 100) / 100;
+    window.APPTCOACH_voiceDebug.currentPitch = Math.round(pitch * 100) / 100;
+    window.APPTCOACH_voiceDebug.currentDelay = Math.round(delay);
+
+    // Speak after pre-speech delay
+    setTimeout(function(){
+      if(!_enabled){
+        if(callback) callback();
+        return;
+      }
+
+      var utt = new SpeechSynthesisUtterance(text);
+      utt.rate   = Math.max(0.5, Math.min(2.0, rate));
+      utt.pitch  = Math.max(0.5, Math.min(2.0, pitch));
+      utt.volume = profile.volume;
+      utt.lang   = profile.lang;
+      if(_selectedVoice) utt.voice = _selectedVoice;
+
+      utt.onstart = function(){
+        _speaking = true;
+        if(bubbleEl){
+          _currentBubble = bubbleEl;
+          bubbleEl.classList.add("speaking");
+        }
+      };
+
+      utt.onend = function(){
+        _speaking = false;
+        if(_currentBubble){
+          _currentBubble.classList.remove("speaking");
+          _currentBubble = null;
+        }
+        if(callback) callback();
+      };
+
+      utt.onerror = function(){
+        _speaking = false;
+        if(_currentBubble){
+          _currentBubble.classList.remove("speaking");
+          _currentBubble = null;
+        }
+        if(callback) callback(); // always fire so result screen isn't stuck
+        console.warn("APPT.COACH voice error");
+      };
+
+      try {
+        window.speechSynthesis.speak(utt);
+      } catch(e){
+        console.warn("APPT.COACH voice error:", e);
+        if(callback) callback();
+      }
+    }, delay);
+  }
+
+  // ── Public API ────────────────────────────────────────────
+  return {
+
+    init: function(){
+      if(!window.speechSynthesis) return;
+      var self = this;
+      // Load immediately if available, also bind voiceschanged for async load
+      var tryLoad = function(){
+        var v = window.speechSynthesis.getVoices();
+        if(v.length) _loadVoice();
+      };
+      tryLoad();
+      window.speechSynthesis.addEventListener("voiceschanged", function(){
+        _loadVoice();
+        // If a voice wasn't selected yet when first speech tried to fire, retry
+        if(_pendingSpeech){
+          var p = _pendingSpeech; _pendingSpeech = null;
+          _speak(p.text, p.warmth, p.bubbleEl, p.callback);
+        }
+      });
+    },
+
+    speak: function(text, warmth, bubbleEl){
+      _speak(text, warmth, bubbleEl, null);
+    },
+
+    speakThen: function(text, warmth, bubbleEl, callback){
+      _speak(text, warmth, bubbleEl, callback);
+    },
+
+    toggle: function(){
+      _enabled = !_enabled;
+      var btn = document.getElementById("voice-btn");
+      if(_enabled){
+        btn.classList.add("active");
+        btn.classList.remove("muted");
+        btn.title = "Ethan's voice: ON";
+      } else {
+        _cancel();
+        btn.classList.remove("active");
+        btn.classList.add("muted");
+        btn.title = "Ethan's voice: OFF";
+      }
+    },
+
+    getVoices: function(){
+      if(!window.speechSynthesis) return [];
+      return window.speechSynthesis.getVoices().filter(function(v){ return v.lang.indexOf("en")===0; });
+    },
+
+    getSelectedVoiceName: function(){
+      return _selectedVoice ? _selectedVoice.name : "";
+    },
+
+    setVoice: function(idx){
+      var voices = window.speechSynthesis.getVoices().filter(function(v){ return v.lang.indexOf("en")===0; });
+      if(voices[idx]){
+        _selectedVoice = voices[idx];
+        _voicesLoaded = true;
+        window.APPTCOACH_voiceDebug.voiceName = voices[idx].name + " (manual)";
+      }
+    },
+
+    preview: function(idx){
+      var voices = window.speechSynthesis.getVoices().filter(function(v){ return v.lang.indexOf("en")===0; });
+      if(!voices[idx] || !window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      var utt = new SpeechSynthesisUtterance("Hi, this is Ethan.");
+      utt.voice  = voices[idx];
+      utt.rate   = PROFILES.ethan.baseRate;
+      utt.pitch  = PROFILES.ethan.basePitch;
+      utt.volume = PROFILES.ethan.volume;
+      utt.lang   = voices[idx].lang;
+      window.speechSynthesis.speak(utt);
+    },
+
+    stop: function(){
+      _cancel();
+    },
+
+    isEnabled: function(){ return _enabled; }
+  };
+})();
+
+/* ── CALLING TONE ── */
+var CallingTone = (function(){
+  // Generates a realistic SG/Asia phone ringback tone using Web Audio API.
+  // Pattern: 400ms on, 200ms off, 400ms on → 3s silence → repeat
+  // Frequencies: 425 Hz dual-tone (similar to SG PSTN ringback)
+  var _ctx = null;
+  var _nodes = [];
+  var _timer = null;
+  var _running = false;
+
+  function _stop(){
+    _running = false;
+    if(_timer) clearTimeout(_timer);
+    _nodes.forEach(function(n){ try{ n.stop(); n.disconnect(); }catch(e){} });
+    _nodes = [];
+  }
+
+  function _beep(freq1, freq2, duration, gainVal){
+    if(!_ctx || !_running) return;
+    var g = _ctx.createGain();
+    g.gain.setValueAtTime(gainVal, _ctx.currentTime);
+    g.gain.setValueAtTime(0, _ctx.currentTime + duration / 1000);
+    g.connect(_ctx.destination);
+
+    [freq1, freq2].forEach(function(f){
+      var osc = _ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(f, _ctx.currentTime);
+      osc.connect(g);
+      osc.start();
+      osc.stop(_ctx.currentTime + duration / 1000 + 0.01);
+      _nodes.push(osc);
+    });
+    _nodes.push(g);
+  }
+
+  function _cycle(){
+    if(!_running) return;
+    // Ring: 400ms on
+    _beep(400, 450, 380, 0.18);
+    _timer = setTimeout(function(){
+      if(!_running) return;
+      // Short gap: 200ms
+      _timer = setTimeout(function(){
+        if(!_running) return;
+        // Ring: 400ms on
+        _beep(400, 450, 380, 0.18);
+        _timer = setTimeout(function(){
+          if(!_running) return;
+          // Long silence: 2400ms then repeat
+          _timer = setTimeout(_cycle, 2400);
+        }, 420);
+      }, 200);
+    }, 420);
+  }
+
+  return {
+    // play: show overlay + play tone for `duration` ms, then call callback
+    play: function(personaEmoji, personaName, duration, callback){
+      // Show overlay
+      var ov = document.getElementById("calling-overlay");
+      document.getElementById("calling-avatar").textContent = personaEmoji;
+      document.getElementById("calling-name").textContent   = personaName;
+      document.getElementById("calling-status").textContent = "Calling…";
+      ov.classList.add("visible");
+
+      // Start audio
+      try {
+        _ctx = new (window.AudioContext || window.webkitAudioContext)();
+        _running = true;
+        _cycle();
+      } catch(e){
+        // No audio context — overlay only, still realistic visually
+        console.warn("CallingTone: no AudioContext", e);
+      }
+
+      // After ~1.5s update status to "Ringing…"
+      setTimeout(function(){
+        var st = document.getElementById("calling-status");
+        if(st) st.textContent = "Ringing…";
+      }, 1500);
+
+      // End after duration
+      setTimeout(function(){
+        _stop();
+        if(_ctx) { try{ _ctx.close(); }catch(e){} _ctx = null; }
+        // Fade out overlay
+        var ov2 = document.getElementById("calling-overlay");
+        ov2.classList.remove("visible");
+        setTimeout(callback, 280); // wait for CSS fade
+      }, duration);
+    },
+
+    stop: function(){ _stop(); },
+
+    // Play a short "call ended" beep — three descending tones
+    endCall: function(callback){
+      try {
+        var ctx = new (window.AudioContext || window.webkitAudioContext)();
+        // Three short descending beeps: 480Hz → 420Hz → 350Hz
+        var beeps = [
+          { freq:480, start:0.00, dur:0.12 },
+          { freq:420, start:0.16, dur:0.12 },
+          { freq:350, start:0.32, dur:0.18 }
+        ];
+        beeps.forEach(function(b){
+          var g = ctx.createGain();
+          g.gain.setValueAtTime(0.22, ctx.currentTime + b.start);
+          g.gain.linearRampToValueAtTime(0, ctx.currentTime + b.start + b.dur);
+          g.connect(ctx.destination);
+          var osc = ctx.createOscillator();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(b.freq, ctx.currentTime + b.start);
+          osc.connect(g);
+          osc.start(ctx.currentTime + b.start);
+          osc.stop(ctx.currentTime + b.start + b.dur + 0.01);
+        });
+        // Clean up and fire callback after all beeps finish (~600ms total)
+        setTimeout(function(){
+          try{ ctx.close(); }catch(e){}
+          if(callback) callback();
+        }, 680);
+      } catch(e){
+        console.warn("CallingTone.endCall: no AudioContext");
+        if(callback) callback();
+      }
+    }
+  };
+})();
+
+/* ── MIC CONTROLLER ── */
+var MicController = (function(){
+
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var _rec       = null;   // SpeechRecognition instance
+  var _active    = false;  // user toggled mic ON
+  var _listening = false;  // recognition currently running
+  var _blocked   = false;  // call is processing Ethan reply — pause mic
+  var _finalised = false;  // prevent double-send
+  var _restartTimer = null;
+
+  // ── Internal helpers ──────────────────────────────────────
+  function _btn()    { return document.getElementById("mic-btn"); }
+  function _inp()    { return document.getElementById("msg-input"); }
+  function _status() { return document.getElementById("mic-status"); }
+  function _stTxt()  { return document.getElementById("mic-status-text"); }
+
+  function _setStatus(text) {
+    _stTxt().textContent = text;
+    _status().classList.toggle("visible", _active);
+  }
+
+  function _updateBtn() {
+    var btn = _btn();
+    if(!SR){ btn.classList.add("unsupported"); return; }
+    btn.classList.toggle("listening", _active && _listening);
+    btn.title = _active ? "Tap to stop mic" : "Tap to use mic";
+  }
+
+  function _startRecognition() {
+    if(!_active || _blocked || _listening) return;
+    try {
+      _rec.start();
+    } catch(e) {
+      // already started — ignore
+    }
+  }
+
+  function _stopRecognition() {
+    if(!_listening) return;
+    try { _rec.stop(); } catch(e){}
+  }
+
+  function _scheduleRestart(delay) {
+    if(_restartTimer) clearTimeout(_restartTimer);
+    _restartTimer = setTimeout(function(){
+      if(_active && !_blocked) _startRecognition();
+    }, delay || 300);
+  }
+
+  // ── Build SpeechRecognition instance ─────────────────────
+  function _build() {
+    if(!SR) return;
+    _rec = new SR();
+    _rec.continuous      = false;   // Android-safe: restart manually
+    _rec.interimResults  = true;
+    _rec.lang            = "en-SG";
+    _rec.maxAlternatives = 1;
+
+    _rec.onstart = function() {
+      _listening = true;
+      _finalised = false;
+      _updateBtn();
+      _setStatus("Listening — speak your line");
+    };
+
+    _rec.onend = function() {
+      _listening = false;
+      _updateBtn();
+      // Only auto-restart if mic is active AND not blocked (blocked = final result pending send)
+      if(_active && !_blocked) {
+        _setStatus("Listening — speak your line");
+        _scheduleRestart(300);
+      } else if(!_active) {
+        _setStatus("");
+        _status().classList.remove("visible");
+      }
+      // If _blocked: stay quiet — MicController.unblock() will restart after Ethan replies
+    };
+
+    _rec.onerror = function(e) {
+      _listening = false;
+      _updateBtn();
+      if(e.error === "not-allowed" || e.error === "service-not-allowed") {
+        _active = false;
+        _btn().classList.add("denied");
+        _btn().title = "Mic permission denied — check browser settings";
+        _setStatus("Mic blocked — enable in browser settings");
+        _status().classList.add("visible");
+        return;
+      }
+      if(e.error === "no-speech" || e.error === "audio-capture" || e.error === "network") {
+        // Transient — restart silently
+        if(_active && !_blocked) _scheduleRestart(400);
+        return;
+      }
+    };
+
+    _rec.onresult = function(e) {
+      var interim = "";
+      var final_  = "";
+      for(var i = e.resultIndex; i < e.results.length; i++){
+        var t = e.results[i][0].transcript;
+        if(e.results[i].isFinal) final_ += t;
+        else interim += t;
+      }
+
+      var inp = _inp();
+
+      if(final_ && final_.trim()){
+        // Lock in the final text, remove interim styling
+        inp.value = final_.trim();
+        inp.classList.remove("mic-interim");
+        _autoResize(inp);
+        document.getElementById("send-btn").disabled = false;
+
+        // Block immediately so onend restart doesn't fire before send
+        if(!_finalised){
+          _finalised = true;
+          _blocked = true;  // prevent onend from restarting recognition
+          if(_restartTimer) clearTimeout(_restartTimer);
+          setTimeout(function(){
+            if(inp.value.trim()){
+              UI.sendMessage();  // sendMessage will call MicController.block() then unblock() after reply
+            } else {
+              // Input was cleared externally — unblock so mic can resume
+              _blocked = false;
+              if(_active) _scheduleRestart(300);
+            }
+          }, 400);
+        }
+      } else if(interim) {
+        // Show interim text in muted style — clear any pending restart
+        if(_restartTimer) clearTimeout(_restartTimer);
+        inp.value = interim;
+        inp.classList.add("mic-interim");
+        _autoResize(inp);
+        document.getElementById("send-btn").disabled = true;
+      }
+    };
+  }
+
+  function _autoResize(inp){
+    inp.style.height = "auto";
+    inp.style.height = Math.min(inp.scrollHeight, 110)+"px";
+  }
+
+  // ── Public API ────────────────────────────────────────────
+  return {
+
+    init: function(){
+      if(!SR){
+        var btn = _btn();
+        if(btn) btn.classList.add("unsupported");
+        return;
+      }
+      _build();
+    },
+
+    toggle: function(){
+      if(!SR) return;
+      if(_btn().classList.contains("denied")) return;
+
+      _active = !_active;
+
+      if(_active){
+        // Reset input before starting
+        var inp = _inp();
+        inp.value = "";
+        inp.classList.remove("mic-interim");
+        _autoResize(inp);
+        document.getElementById("send-btn").disabled = true;
+        _startRecognition();
+      } else {
+        _stopRecognition();
+        if(_restartTimer) clearTimeout(_restartTimer);
+        _status().classList.remove("visible");
+        // Clear interim text if nothing finalised
+        var inp = _inp();
+        if(inp.classList.contains("mic-interim")){
+          inp.value = "";
+          inp.classList.remove("mic-interim");
+          _autoResize(inp);
+          document.getElementById("send-btn").disabled = true;
+        }
+      }
+      _updateBtn();
+    },
+
+    // Called by sendMessage BEFORE Ethan starts "replying"
+    block: function(){
+      _blocked = true;
+      if(_restartTimer) clearTimeout(_restartTimer);
+      if(_listening) _stopRecognition();
+      if(_active) _setStatus("Ethan is replying…");
+    },
+
+    // Called by sendMessage AFTER Ethan's reply is shown
+    unblock: function(){
+      _blocked = false;
+      _finalised = false;
+      if(_active){
+        var inp = _inp();
+        inp.value = "";
+        inp.classList.remove("mic-interim");
+        _autoResize(inp);
+        document.getElementById("send-btn").disabled = true;
+        _setStatus("Listening — speak your line");
+        _scheduleRestart(400);
+      }
+    },
+
+    // Fully deactivate (call ended / result shown)
+    deactivate: function(){
+      _active = false;
+      _blocked = false;
+      _stopRecognition();
+      if(_restartTimer) clearTimeout(_restartTimer);
+      _updateBtn();
+      _status().classList.remove("visible");
+    },
+
+    isActive: function(){ return _active; }
+  };
+})();
+
+/* ── INPUT HANDLERS ── */
+document.addEventListener("DOMContentLoaded", function(){
+  VoiceRenderer.init();
+  MicController.init();
+  var inp = document.getElementById("msg-input");
+  inp.addEventListener("input", function(){
+    this.style.height = "auto";
+    this.style.height = Math.min(this.scrollHeight, 110)+"px";
+    document.getElementById("send-btn").disabled = !this.value.trim();
+  });
+  inp.addEventListener("keydown", function(e){
+    if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); if(!document.getElementById("send-btn").disabled) UI.sendMessage(); }
+  });
+});
+</script>
+</body>
+</html>
