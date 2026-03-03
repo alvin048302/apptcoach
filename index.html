@@ -780,7 +780,7 @@ var POOLS = {
 /* ================================================================
    GEMINI AI LAYER
 ================================================================ */
-var GEMINI_URL = "https://apptcoach-proxy.alvin048302.workers.dev/";
+var GEMINI_URL = "REPLACE_WITH_YOUR_WORKER_URL";
 
 /* Ethan's character brief — sent with every turn */
 var ETHAN_BRIEF = "You are Ethan, a 24-year-old software engineer, 1 year into your first job. You live with your parents. You have company group insurance and assume it's enough. Financial planning feels like something for people with families or mortgages — not relevant to you yet. You speak in plain, natural English — complete sentences, conversational tone. NEVER use Singlish, slang, or filler words like 'lah', 'leh', 'aiya', 'nah', 'yah', 'can', 'lor'. You are not rude but you are busy and mildly sceptical on cold calls.";
@@ -1305,9 +1305,43 @@ function _extractIntents(raw){
   var hasMultiQ = (raw.match(/\?/g)||[]).length >= 2;
 
   var hasIdentity = _any(t,["i am","i'm","my name is","this is","speaking is","calling is","from great eastern","from ge","from aia","from prudential","from income","from singlife","from aviva","from manulife","from tokio marine","from great eastern life","from great eastern financial","financial adviser","financial advisor","fa ","licensed fa","wealth manager","financial planner","financial consultant","my name"]);
-  var hasMicroReason = _any(t,["financial plan","financial planning","financial direction","financial goals","financial health","financial picture","financial review","financial check","financial overview","financial wellness","financial readiness","financial freedom","life goals","life planning","life direction","wealth planning","wealth management","wealth building","wealth check","working toward","track for","on track","right direction","headed in the right","pointing in the right","aligned with","help working professional","help young","help people your age","help fresh grads","help engineers","help people who just started","just started working","early career","starting out","company insurance","group insurance","what your company covers","company benefits","group benefits","employer insurance","making your money work","money working for you","money work for","know where you stand","where you actually stand","your current position","options at 30","options at 35","options later","options in the future","sitting there doing nothing","actually working for you","working toward what you want"]);
+  var hasMicroReason = _any(t,["financial plan","financial planning","financial direction","financial goals","financial health","financial picture","financial review","financial check","financial overview","financial wellness","financial readiness","financial freedom","life goals","life planning","life direction","wealth planning","wealth management","wealth building","wealth check","working toward","track for","on track","right direction","headed in the right","pointing in the right","aligned with","help working professional","help young","help people your age","help fresh grads","help engineers","help people who just started","just started working","early career","starting out","company insurance","group insurance","what your company covers","company benefits","group benefits","employer insurance","making your money work","money working for you","money work for","know where you stand","where you actually stand","your current position","options at 30","options at 35","options later","options in the future","sitting there doing nothing","actually working for you","working toward what you want",
+    /* ── A: Income & cash flow ── */
+    "paycheck to paycheck","pay cheque to pay cheque","month to month","spending keeps up with","lifestyle inflation","lifestyle creep","every time you get a raise","salary goes up but savings","earning but nothing to show","nothing left at end of month","nothing left at the end","cash flow","income protection","protect your income","income gap","income continuity",
+    /* ── B: Emergency fund ── */
+    "emergency fund","rainy day fund","six months expenses","3 months expenses","financial buffer","cash buffer","liquid savings","if something disrupts your income","income disruption","sudden job loss","buffer",
+    /* ── C: Job hopping & career transition ── */
+    "job hop","job hopping","career switch","career transition","changing industries","contract role","gig work","freelance","side hustle","multiple income streams","not on a permanent contract","not permanent yet",
+    /* ── D: BTO / first home ── */
+    "bto","hdb flat","first home","down payment","downpayment","saving for a flat","flat fund","housing fund","cpf ordinary account","cpf oa","home loan","mortgage","renovation budget","reno fund","key collection",
+    /* ── E: Salary & increments ── */
+    "salary increment","annual increment","pay review","variable income","commission-based","performance bonus","annual bonus","aws","annual wage supplement",
+    /* ── F: Investment awareness ── */
+    "investing","investment","rsp","regular savings plan","unit trust","etf","index fund","dollar cost averaging","robo advisor","stashaway","endowus","syfe","srs","supplementary retirement scheme","cpf top up","cpf sa","cpf special account","passive income","investment returns","compound interest","compounding","make money grow","money grow",
+    /* ── G: Financial independence & life goals ── */
+    "financial independence","fire","financially independent","own terms","not depending on anyone","not relying on parents","travel fund","sabbatical","career break","take a break from work","work optional","bucket list","milestone",
+    /* ── H: Cost of living / inflation ── */
+    "cost of living","rising costs","everything costs more","inflation","utilities going up","housing prices going up","things are more expensive",
+    /* ── I: Singlish / natural phrasing ── */
+    "make sure you're covered","make sure covered","covered or not","clear on where you are","take stock","take a look at the big picture","put things in order","get things sorted","sort out finances","get your finances sorted","financial health check","money in order","things in order"]);
   var hasPermission = _any(t,["20 seconds","30 seconds","a minute","two minutes","quick moment","do you have","got time","have time","spare a moment","spare me","is it ok","is now ok","ok to talk","ok if i","can i","may i","do you mind","would you mind","is this a good time","got 20","got 30","give me 20","give me 30","give me a sec","can talk","can we talk","can i ask you something","20 seconds or not","can talk or not","ok or not"]);
-  var hasReason = _any(t,["most working adults","a lot of working adults","many working adults","most people your age","a lot of people your age","many people your age","most young professionals","a lot of young professionals","people who just started","guys your age","someone your age","at your stage","at this stage","at this point in","early in your career","financial plan hasn't","plan hasn't been","hasn't really been looked","set up a few years","set up years ago","put in place years ago","set and forget","back burner","been pushed","keep getting pushed","been meaning to","meaning to get to","always push it back","life changes but","life moves but","things change but","company insurance","group insurance covers","what your group","switch jobs","leave the company","change jobs","between jobs","what it actually covers","what's actually covered","what exactly covers","covered if you leave","covered if you switch","group insurance gap","don't know what","most people don't know","most people don't realise","financial independence","retire early","retire at","retire before","options later","options at 30","options at 35","have options","not just saving","earning well but","earning but not","making your money","money working","working toward something","know where you stand","where you actually stand","gap between","blind spot","blind spots","something missing","starting young","start early","starting early","start at 24","start now"]);
+  var hasReason = _any(t,["most working adults","a lot of working adults","many working adults","most people your age","a lot of people your age","many people your age","most young professionals","a lot of young professionals","people who just started","guys your age","someone your age","at your stage","at this stage","at this point in","early in your career","financial plan hasn't","plan hasn't been","hasn't really been looked","set up a few years","set up years ago","put in place years ago","set and forget","back burner","been pushed","keep getting pushed","been meaning to","meaning to get to","always push it back","life changes but","life moves but","things change but","company insurance","group insurance covers","what your group","switch jobs","leave the company","change jobs","between jobs","what it actually covers","what's actually covered","what exactly covers","covered if you leave","covered if you switch","group insurance gap","don't know what","most people don't know","most people don't realise","financial independence","retire early","retire at","retire before","options later","options at 30","options at 35","have options","not just saving","earning well but","earning but not","making your money","money working","working toward something","know where you stand","where you actually stand","gap between","blind spot","blind spots","something missing","starting young","start early","starting early","start at 24","start now",
+    /* ── A: Income & cash flow ── */
+    "most people your age are living paycheck","living paycheck to paycheck","salary increment doesn't mean saving more","raise but still broke","cost of living eats into","inflation eats into","purchasing power","real wage","after expenses there's nothing","take home but spend everything",
+    /* ── B: Emergency fund ── */
+    "most people your age don't have an emergency fund","most people haven't set aside","no buffer if income stops","what happens if you can't work","income stops for a month","between jobs with no savings","redundancy with no buffer",
+    /* ── C: Job hopping & career transition ── */
+    "when you switch jobs your group coverage stops","coverage drops the moment you leave","between jobs means no coverage","job hopping is common at your age","most people switch jobs in their 20s","career switch means starting cover from zero","contract workers don't get group benefits","freelancers have no employer coverage",
+    /* ── D: BTO / first home ── */
+    "most people your age are saving for a bto","bto queue takes","bto wait time","need to show cpf for home loan","cpf affects your home loan","what happens to your flat plan if income stops","protecting the ability to pay your mortgage","home loan still needs to be paid if you can't work",
+    /* ── E: Salary & increments ── */
+    "increment doesn't keep up with cost of living","bonus varies year to year","variable income is hard to plan around","when income fluctuates it's harder to save","most people don't adjust their savings when income changes",
+    /* ── F: Investment awareness ── */
+    "most people your age haven't started investing","keeping money in savings account losing to inflation","money sitting in bank doing nothing","money sitting in a bank","savings account rate doesn't beat inflation","never reviewed where money is going","haven't thought about making money grow","income is working hard but money isn't",
+    /* ── G: Financial independence ── */
+    "people your age are thinking about financial independence","most people want options before 40","being able to take a career break without panic","having enough to not worry about a pay cut","not being stuck in a job just for the money","having choices when life changes",
+    /* ── H: Cost of living / inflation ── */
+    "cost of living has outpaced salary growth","real income has actually fallen","expenses grow faster than income","same salary buys less than it did","inflation means you need more than you think"]);
   var hasQMark = raw.indexOf("?")>=0;
   var lqp = ["when did you last","when was the last","last time you","have you had a chance","have you ever","ever had a proper","has it been a while","been a while since","a while since you","has anything changed","anything major changed","anything shifted","would you say","does that sound","sound familiar","ring a bell","crossed your mind","on your mind","thinking about","have you looked","have you checked","have you reviewed","is that where you're at","is that familiar","can relate","know what it covers","know what's covered","checked what","understand what","sure what your","clear on what"];
   var lqt = ["when","have you","did you","are you","do you","would you","has that","is that"];
@@ -1586,6 +1620,11 @@ function _doTurn(raw){
   if(f.hasWrongLang) _S.wrongLangCount++;
   var delta=_warmthDelta(f,{phase:ph,state:st,isRepeat:rep});
   _S.warmth=Math.max(0,Math.min(100,_S.warmth+delta));
+  // If lecture penalty pushed warmth very low, end call rather than getting stuck
+  if(f.isRamble && ph>=2 && _S.warmth<=15 && !ended){
+    reply=_pickNo(POOLS.s3_lectured,_S.lastReply);
+    _S.status="ended"; _S.endReason="hardReject"; ended=true;
+  }
 
   var reply="", hint="", hintKey="", critical="", ended=false;
 
@@ -1717,7 +1756,8 @@ function _doTurn(raw){
       } else if(st==="PI_WINDOW"){
         var eth=f.hasCompanyHook||f.hasHeadstartFrame||f.hasIndependenceFrame||f.hasOptionsFrame;
         // Full close: reframe/meet + timebox + two options — advance to Phase 4
-        if((f.hasMeet||f.hasReframe)&&f.hasTimebox&&f.hasTwoOptions){
+        // But block if rep used fear tactics or wrong language — coach them instead
+        if((f.hasMeet||f.hasReframe)&&f.hasTimebox&&f.hasTwoOptions&&!f.hasFear&&!f.hasWrongLang){
           _S.phase=4; _S.state="";
           var pioc=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=pioc; ended=true;
           reply=pioc==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):pioc==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
@@ -1740,6 +1780,12 @@ function _doTurn(raw){
           _S.phase=3; _S.state="ACK"; _S.objStep="ack";
           reply=_pickMemory(POOLS.obj_inject,_S.lastReply);
           hint=HINTS.s3_ack; hintKey="s3_ack";
+        } else if((f.hasMeet||f.hasReframe)&&(f.hasTimebox||f.hasTwoOptions)){
+          // Partial close attempt — rep has the right idea but missing timebox or two options
+          // Advance to Phase 4 and coach them to complete the ask rather than looping
+          _S.phase=4; _S.state="";
+          reply=f.hasTimebox?_pickMemory(POOLS.s4_noOptions,_S.lastReply):_pickMemory(POOLS.s4_noTimebox,_S.lastReply);
+          hint=f.hasTimebox?HINTS.s4_options:HINTS.s4_timebox; hintKey=f.hasTimebox?"s4_options":"s4_timebox";
         } else {
           // Wasted PI window — rep got a moment but didn't use it for the ask
           _S.warmth=Math.max(0,_S.warmth-10);
@@ -1846,6 +1892,10 @@ function _doTurn(raw){
 async function _doTurnAsync(text){
   var result = _doTurn(text);
   if(!result) return null;
+
+  // If engine decided call is over, lock status NOW before any await
+  // This prevents voice recognition from submitting new turns during Gemini latency
+  if(result.ended && _S){ _S.status = "ended"; }
 
   // Get Gemini reply
   var aiReply = await _geminiReply(result.situation, text);
@@ -2114,6 +2164,8 @@ var UI = (function(){
       }
 
       if(result.ended){
+        // Lock session immediately — prevent any further input before TTS finishes
+        if(_S) _S.status = "ended";
         MicController.deactivate();
         document.getElementById("send-btn").disabled = true;
         VoiceRenderer.speakThen(result.reply, result.warmth, prospectBubble, function(){
@@ -2908,6 +2960,10 @@ var MicController = (function(){
         inp.value = final_.trim();
         inp.classList.remove("mic-interim");
         _autoResize(inp);
+
+        // Don't process voice input if session has already ended
+        if(!_S || _S.status !== "active"){ inp.value = ""; return; }
+
         document.getElementById("send-btn").disabled = false;
 
         // Block immediately so onend restart doesn't fire before send
