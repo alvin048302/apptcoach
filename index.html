@@ -664,7 +664,7 @@
 
     <div class="result-actions">
       <button class="btn-primary" onclick="UI.retrySession()">Try Again</button>
-      <button class="btn-ghost"   onclick="UI.downloadPDF()">⬇ Download Report (PDF)</button>
+      <button class="btn-ghost"   onclick="UI.downloadPDF()">⬇ Save Report as PDF</button>
       <button class="btn-ghost"   onclick="UI.backToStart()">Back to Setup</button>
     </div>
 
@@ -1600,7 +1600,7 @@ function _isRude(text,wc){
 function _isGiveUp(text){
   var t=text.toLowerCase();
   var wc=t.trim().split(/\s+/).length;
-  var gu=["bye","goodbye","good bye","i give up","forget it","never mind","forget this","ok i'll stop","ok i will stop","sorry to bother","sorry for bothering","take care","have a good day","have a nice day","thanks anyway","thank you anyway","ok bye","ok goodbye","okbye","gtg","got to go","gotta go","no worries bye","alright bye","ok take care","see ya","see you","ciao","adios","farewell","ok then bye","ok lah bye","bye bye","byebye","buh bye","toodles"];
+  var gu=["bye","goodbye","good bye","i give up","forget it","never mind","forget this","ok i'll stop","ok i will stop","sorry to bother","sorry for bothering","take care","have a good day","have a nice day","thanks anyway","thank you anyway","ok bye","ok goodbye","okbye","gtg","got to go","gotta go","no worries bye","alright bye","ok take care","see ya","ciao","adios","farewell","ok then bye","ok lah bye","bye bye","byebye","buh bye","toodles"];
   for(var i=0;i<gu.length;i++) if(t.indexOf(gu[i])>=0) return true;
   if(wc<=4&&(t.indexOf("bye")>=0||t.indexOf("goodbye")>=0)) return true;
   return false;
@@ -1631,7 +1631,7 @@ function _doTurn(raw){
   /* Instant ends */
   if(_isRude(text,I.wordCount)){
     _S.warmth=0; reply=_pick(POOLS.hard_reject); _S.status="ended"; _S.endReason="hardReject"; ended=true;
-  } else if(_isGiveUp(text)&&ph>=2){
+  } else if(_isGiveUp(text)&&ph>=2&&!ended){
     // Rep says goodbye/gives up — Ethan is confused then line goes dead
     reply=_pick(["Hello? You still there?","Ok... bye then.","Uh... ok. Bye."]);
     _S.status="ended"; _S.endReason="repGaveUp"; ended=true;
@@ -2372,15 +2372,12 @@ var UI = (function(){
         "</body></html>"
       ].join("");
 
-      var blob = new Blob([html], {type:"text/html"});
-      var url  = URL.createObjectURL(blob);
-      var a    = document.createElement("a");
-      a.href     = url;
-      a.download = "apptcoach-"+new Date().toISOString().slice(0,10)+".html";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Open in new tab and trigger print — on iOS Safari this gives native Save to PDF
+      var w = window.open("", "_blank");
+      if(!w){ alert("Please allow pop-ups to save the report as PDF."); return; }
+      w.document.write(html);
+      w.document.close();
+      w.onload = function(){ w.focus(); w.print(); };
     },
 
     toggleTranscript: function(){
