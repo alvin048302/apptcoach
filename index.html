@@ -415,6 +415,8 @@
     ::-webkit-scrollbar { width:4px; }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
   </style>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'></script>
 </head>
 <body>
 <div class="app">
@@ -2373,12 +2375,35 @@ var UI = (function(){
         "</body></html>"
       ].join("");
 
-      var _pf=document.getElementById("_print_frame"); if(_pf) _pf.parentNode.removeChild(_pf);
-      var iframe=document.createElement("iframe"); iframe.id="_print_frame";
-      iframe.style.cssText="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;";
-      document.body.appendChild(iframe);
-      iframe.contentDocument.open(); iframe.contentDocument.write(html); iframe.contentDocument.close();
-      iframe.onload=function(){ iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(function(){ if(iframe.parentNode) iframe.parentNode.removeChild(iframe); },3000); };
+      // Render into hidden div, capture with html2canvas, save as PDF via jsPDF
+      var _c=document.getElementById("_pdf_cont"); if(_c) _c.parentNode.removeChild(_c);
+      var cont=document.createElement("div");
+      cont.id="_pdf_cont";
+      cont.style.cssText="position:fixed;top:-9999px;left:0;width:700px;background:#fff;padding:32px 40px;box-sizing:border-box;";
+      cont.innerHTML=html;
+      document.body.appendChild(cont);
+      var btn=document.getElementById("pdf-btn");
+      if(btn){btn.textContent="Saving…";btn.disabled=true;}
+      html2canvas(cont,{scale:2,useCORS:true,backgroundColor:"#ffffff",logging:false}).then(function(canvas){
+        var imgData=canvas.toDataURL("image/png");
+        var jsPDF=window.jspdf.jsPDF;
+        var pdf=new jsPDF({orientation:"portrait",unit:"pt",format:"a4"});
+        var pw=pdf.internal.pageSize.getWidth();
+        var ph=pdf.internal.pageSize.getHeight();
+        var iw=pw-40; var ih=(canvas.height*iw)/canvas.width;
+        var pages=Math.ceil(ih/(ph-40));
+        for(var p=0;p<pages;p++){
+          if(p>0) pdf.addPage();
+          pdf.addImage(imgData,"PNG",20,20-(p*(ph-40)),iw,ih);
+        }
+        pdf.save("apptcoach-"+new Date().toISOString().slice(0,10)+".pdf");
+        document.body.removeChild(cont);
+        if(btn){btn.textContent="⬇ Save Report as PDF";btn.disabled=false;}
+      }).catch(function(){
+        document.body.removeChild(cont);
+        if(btn){btn.textContent="⬇ Save Report as PDF";btn.disabled=false;}
+        alert("PDF generation failed. Please try again.");
+      });
     },
 
     toggleTranscript: function(){
