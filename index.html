@@ -664,7 +664,7 @@
 
     <div class="result-actions">
       <button class="btn-primary" onclick="UI.retrySession()">Try Again</button>
-      <button class="btn-ghost"   onclick="UI.downloadPDF()">⬇ Save Report as PDF</button>
+      <button class="btn-ghost"   onclick="UI.downloadPDF()">⬇ Download Report (PDF)</button>
       <button class="btn-ghost"   onclick="UI.backToStart()">Back to Setup</button>
     </div>
 
@@ -1640,7 +1640,7 @@ function _doTurn(raw){
     _S.status="ended"; _S.endReason="hardReject"; ended=true;
   } else if(_S.warmth<=0){
     reply=_pick(POOLS.hard_reject); _S.status="ended"; _S.endReason="hardReject"; ended=true;
-  } else if(_S.turn>_S.maxTurns){
+  } else if(_S.turn>=_S.maxTurns){
     reply="I have to run — we've been going a while. Thanks for calling."; _S.status="ended"; _S.endReason="timeout"; ended=true;
   }
 
@@ -1854,7 +1854,8 @@ function _doTurn(raw){
         _S.p4FollowUps++;
         if(_S.p4FollowUps>=2){
           var hasEnough = f.hasMeet&&(f.hasTimebox||f.hasTwoOptions);
-          var fc = _roll(hasEnough?_S.warmth:_S.warmth-20, hasEnough?"perfect":"partial");
+          var fcWarmth = hasEnough?_S.warmth:_S.warmth-20;
+          var fc = fcWarmth<25 ? "softReject" : _roll(fcWarmth, hasEnough?"perfect":"partial");
           _S.status="ended"; _S.endReason=fc; ended=true;
           reply=fc==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):fc==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
         } else if(f.hasMeet&&f.hasTimebox){
@@ -2372,12 +2373,12 @@ var UI = (function(){
         "</body></html>"
       ].join("");
 
-      // Open in new tab and trigger print — on iOS Safari this gives native Save to PDF
-      var w = window.open("", "_blank");
-      if(!w){ alert("Please allow pop-ups to save the report as PDF."); return; }
-      w.document.write(html);
-      w.document.close();
-      w.onload = function(){ w.focus(); w.print(); };
+      var _pf=document.getElementById("_print_frame"); if(_pf) _pf.parentNode.removeChild(_pf);
+      var iframe=document.createElement("iframe"); iframe.id="_print_frame";
+      iframe.style.cssText="position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none;";
+      document.body.appendChild(iframe);
+      iframe.contentDocument.open(); iframe.contentDocument.write(html); iframe.contentDocument.close();
+      iframe.onload=function(){ iframe.contentWindow.focus(); iframe.contentWindow.print(); setTimeout(function(){ if(iframe.parentNode) iframe.parentNode.removeChild(iframe); },3000); };
     },
 
     toggleTranscript: function(){
