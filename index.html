@@ -975,7 +975,7 @@ async function _geminiDebrief(outcome, engineFlags){
   var prompt = "You are a cold calling coach reviewing a practice call. The rep was trying to book a 15-minute meeting with Ethan, a 24-year-old Singaporean engineer who is sceptical of cold calls.\n\n" +
     "The rep's ONLY goal: book a short meeting — not to explain products, not to convince, just to get a time in the diary.\n\n" +
     "THE 5 PRINCIPLES REPS MUST FOLLOW:\n" +
-    "1. OPENER: One breath — name + company + one specific reason relevant to their age/situation + ask for 20 seconds. No pitch.\n" +
+    "1. OPENER: One breath — name + company + one specific reason relevant to their age/situation + ask for 20 seconds. No pitch. NOTE: If the rep got their name, company AND asked for time — credit that. Only flag as wrong if they missed two or more of these elements, or included a product pitch.\n" +
     "2. VALUE SIGNAL: When Ethan gives time, share ONE relevant observation (not a product feature) and ask ONE light question to build curiosity.\n" +
     "3. PATTERN INTERRUPT: When Ethan tries to exit, do NOT beg for time. Instead: pause, then ask for just one more moment with a specific hook.\n" +
     "4. REFRAME: Use that moment to give ONE concrete reason this matters to someone their age, then immediately ask for the meeting.\n" +
@@ -987,7 +987,7 @@ async function _geminiDebrief(outcome, engineFlags){
     "- Reframe: 'No commitment at all — just 15 minutes to see where things stand. Tuesday 8pm or Saturday 10am?'\n\n" +
     "Engine flags:\n" + flagSummary + "\n\n" +
     "Transcript:\n" + history + "\n\n" +
-    "YOUR TASK: Review the transcript carefully. For each moment card, quote the REP'S EXACT words (not paraphrased), identify specifically what went wrong at that moment, and give ONE concrete alternative line they could have said instead — modelled on the example strong lines above.\n\n" +
+    "YOUR TASK: Review the transcript carefully. Be fair and accurate — only flag a moment as wrong if the rep clearly made an error. Do not flag turns that are partially correct or follow the right structure but missed one small element. For each moment card, quote the REP'S EXACT words (not paraphrased), identify specifically what went wrong at that moment, and give ONE concrete alternative line they could have said instead — modelled on the example strong lines above. Limit to maximum 3 moment cards — only the most impactful errors.\n\n" +
     "Return ONLY this JSON, no markdown, no preamble:\n" +
     '{"summary":"2 sentences — what happened overall and the single biggest reason for the outcome","moments":[{"turn":"rep exact quote, 12 words max","issue":"one sentence — what specifically went wrong here","better":"one concrete alternative line the rep could say instead"}],"strengths":["one specific observed behaviour done well — reference what they actually said, max 2 items"],"improvements":["one specific, actionable fix with example language — max 2 items"],"next_call_tip":"one sentence — the single highest-leverage change for next time"}';
 
@@ -1075,7 +1075,7 @@ var HINTS = {
   s3_reframe: "Lower the ask, then ask for the meeting in the same breath. Try: \"Nothing to commit to — just 15 minutes to see where things stand. Tuesday 8pm or Saturday morning?\"",
   s3_noask:   "Good — now close it. Say how long and give two times. Try: \"Just 15 minutes. Tuesday 8pm or Saturday morning — which works?\"",
   s4_timebox: "He needs to know how long before he'll say yes. Try: \"Just 15 minutes — Tuesday 8pm or Saturday morning?\"",
-  s4_options: "Give him two specific times to pick from. Try: \"Tuesday 8pm or Saturday morning — which works better for you?\"",
+  s4_options: "Give him two specific times to pick from. Try: \"Just 15 minutes — Tuesday 8pm or Saturday morning, which works better for you?\"",
   pi_use:     "He wants to go — don't give your reason yet. Ask for one moment first. Try: \"Before you go — just one thing.\" Then stop.",
   pi_window:  "He said ok — use it now. One reason, lower the ask, ask for the meeting. All in this turn. Try: \"Most people your age [reason]. Nothing to commit to — just 15 minutes. Tuesday 8pm or Saturday morning?\"",
   pi_ignored: "He signalled he wanted to go and you kept going. Next time: acknowledge it first. Try: \"I hear you\" — then ask for one moment.",
@@ -1150,7 +1150,7 @@ var COACHING = {
   s4_options: {
     stage: "Giving two times to choose from",
     principle: "Give two specific times — day and rough time of day. Ethan just picks one. Don't ask when he's free.",
-    example: "\"Tuesday 8pm or Saturday morning — which works better for you?\"",
+    example: "\"Just 15 minutes — Tuesday 8pm or Saturday morning, which works better for you?\"",
     why: "An open question puts all the work on him. Two specific options make the decision easy — he just picks the one that works.",
     avoid: "Asking 'when are you free?' Always give two options, not one."
   },
@@ -1456,7 +1456,7 @@ function _extractIntents(raw){
     /* ── H: Cost of living / inflation ── */
     "cost of living has outpaced salary growth","real income has actually fallen","expenses grow faster than income","same salary buys less than it did","inflation means you need more than you think"]);
   var hasQMark = raw.indexOf("?")>=0;
-  var lqp = ["when did you last","when was the last","last time you","have you had a chance","have you ever","ever had a proper","has it been a while","been a while since","a while since you","has anything changed","anything major changed","anything shifted","would you say","does that sound","sound familiar","ring a bell","crossed your mind","on your mind","thinking about","have you looked","have you checked","have you reviewed","is that where you're at","is that familiar","can relate","know what it covers","know what's covered","checked what","understand what","sure what your","clear on what"];
+  var lqp = ["when did you last","when was the last","last time you","have you had a chance","have you ever","ever had a proper","has it been a while","been a while since","a while since you","has anything changed","anything major changed","anything shifted","would you say","does that sound","sound familiar","ring a bell","crossed your mind","on your mind","thinking about","have you looked","have you checked","have you reviewed","is that where you're at","is that familiar","can relate","know what it covers","know what's covered","checked what","understand what","sure what your","clear on what","thought about","considered that","thought about this","is that something","is there anything","ever thought","give it thought","something you've","you've considered","you've thought","have you given","given it any","any thought to","thought to that","something to think","thought much about","considered this","relate to that","does that apply","apply to you","relevant to you","familiar to you","sound like you","like your situation","your situation","at your stage","at your age"];
   var lqt = ["when","have you","did you","are you","do you","would you","has that","is that"];
   var hasLightQ = !tooPersonal&&!hasMultiQ&&!hasPitch&&(lqp.some(function(p){return t.indexOf(p)>=0;})||(lqt.some(function(p){return t.indexOf(p)>=0;})&&hasQMark));
   var hasAck = _any(t,["i understand","i get it","i get that","got it","i see","fair enough","that is fair","thats fair","makes sense","that makes sense","understandable","totally understandable","noted","of course","no worries","not a problem","not at all","absolutely","totally","totally fair","totally get","totally understand","completely understand","i hear you","i hear that","i appreciate","appreciate that","i respect","respect that","most people feel","a lot of people","many people feel","you're not alone","youre not alone","not alone","that's common","thats common","very common","right right","i see i see","sure","for sure","definitely","valid","reasonable","you are right","youre right","that is right","exactly","ya fair","ya fair lah","yah fair","yah lah","yah i know","yah makes sense","ok ok i understand","ok ok i get","aiya i know","aiya i understand","good to know","good to hear","fair lah","fair enough lah","yah totally","totally lah","yah totally fair"]);
