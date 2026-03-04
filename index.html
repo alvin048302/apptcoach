@@ -283,7 +283,22 @@
     .coaching-avoid {
       color:#b45309;
     }
-    .coaching-avoid-wrap {
+    .coaching-example-wrap {
+  background: #1a2a1a;
+  border: 1px solid #2d4a2d;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.coaching-label-example {
+  color: #5cb85c;
+}
+.coaching-example {
+  color: #d4edda;
+  font-style: italic;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.coaching-avoid-wrap {
       background:rgba(251,191,36,.08);
       border:1px solid rgba(251,191,36,.25);
       border-radius:var(--r-sm);
@@ -695,6 +710,10 @@
       <div class="coaching-label">What Ethan needs</div>
       <div class="coaching-body" id="coaching-principle"></div>
     </div>
+    <div class="coaching-section coaching-example-wrap" id="coaching-example-section">
+      <div class="coaching-label coaching-label-example">Try saying</div>
+      <div class="coaching-body coaching-example" id="coaching-example"></div>
+    </div>
     <div class="coaching-section">
       <div class="coaching-label">Why it matters</div>
       <div class="coaching-body" id="coaching-why"></div>
@@ -746,38 +765,110 @@ var _clean   = function(t){ return t.toLowerCase().replace(/[''""]/g,"'").replac
 
 /* ── REPLY POOLS ── */
 var POOLS = {
-  s1_rushed:    ["Yeah what is it.","Yah who is this.","Hello. What do you want.","Make it quick."],
-  s1_neutral:   ["Hello, who is this?","Yah speaking. What is it?","Who are you?","Yes? What's this about?"],
-  s1_distracted:["Mm? Hello?","Yah... one sec. Ok what.","Hello?","Yah?"],
-  p2_entry:     ["Yes? What's this about?","Yah speaking. What is it?","Ok, go on.","Mm. What is it?","Yah, ok. What?","Ok, and?"],
+  s1_rushed:    ["Yeah, what is it.","Who is this?","Hello. What do you want.","Make it quick."],
+  s1_neutral:   ["Hello, who is this?","Speaking. What is it?","Who are you?","Yes? What's this about?"],
+  s1_distracted:["Hello?","Sorry, one second. What is it?","Hello?","Yes?"],
+  p2_entry:     ["Yes? What's this about?","Speaking. What is it?","Ok, go on.","What is it?","Ok, and?"],
   s1_bad:       ["Not interested. Bye.","I'm going to stop you there.","Please don't call me again.","Not what I need right now."],
-  s1_weak:      ["Who are you again?","What company is this?","Sorry, who is this calling?","Didn't catch your name.","Yah? Who is calling?","I did not catch that — who are you?","Which company is this?"],
-  s2_hooked:    ["What do you mean exactly?","Hm. My company insurance not enough meh?","What is it that you're checking?","Ok... so what does that involve?"],
-  s2_flat:      ["Not interested, thanks.","I don't really need this lah.","Can just WhatsApp me?","I'm fine already."],
+  s1_weak:      ["Who are you again?","What company is this?","Sorry, who is this calling?","Didn't catch your name.","Who is calling?","I did not catch that — who are you?","Which company is this?"],
+  s2_hooked:    ["What do you mean exactly?","My company insurance isn't enough?","What exactly are you checking?","Ok, so what does that involve?"],
+  s2_flat:      ["Not interested, thanks.","I don't really need this.","Can you just WhatsApp me?","I'm fine as I am."],
   s2_bad:       ["This is a sales call. Not interested.","You're trying to sell me something.","Sounds like a pitch. I'm hanging up.","Not interested in products."],
   s2_noObs:     ["Sorry, what exactly is this about?","I'm not sure what you're asking.","Can you tell me more about why you're calling?","What's the point of this call?"],
-  s2_noQ:       ["Ok... so what do you want from me?","Right. And what does that have to do with me?","Sure. What's your question?","Ok, I'm listening. What is it you want?"],
-  obj_inject:   ["I'm still young, no rush for this lah.","At my age no need to think so far ahead.","I just started working, still figuring things out.","Too early lah, can do this later."],
-  obj_early:    ["Not interested, thanks.","I don't think I need this.","Not for me.","No thanks.","Aiya no need lah.","Ok busy right now.","Maybe another time.","I'm quite tied up actually.","Yah I'm good, no need.","Nah I'm fine."],
-  pi_window:    ["Ok, go ahead then.","Fine, what is it.","Ok. But make it quick.","Alright, say what you want to say.","Yah ok what?","Fine. 10 seconds.","Ok lah, say it.","Alright, I'm listening.","Go ahead, quickly.","Ok what is it?"],
-  pi_missed:    ["Yah ok. Can WhatsApp me the details?","I'll think about it lah.","Mm... not really keen.","Maybe next time."],
-  pi_ignored:   ["Aiya no need lah.","I said not interested already.","Ok bye.","Don't need, thanks."],
+  s2_noQ:       ["Ok, so what do you want from me?","Right. And what does that have to do with me?","Sure. What's your question?","Ok, I'm listening. What is it you want?"],
+  obj_inject:   ["I'm still young, I don't think I need this yet.","At my age I don't need to think that far ahead.","I just started working, still figuring things out.","It's a bit early for this, I can do it later."],
+  obj_early:    ["Not interested, thanks.","I don't think I need this.","Not for me.","No thanks.","I don't need this right now.","I'm busy right now.","Maybe another time.","I'm quite tied up actually.","I'm good, no need.","I'm fine."],
+  pi_window:    ["Ok, go ahead then.","Fine, what is it.","Ok. But make it quick.","Alright, say what you want to say.","Fine. 10 seconds.","Alright, I'm listening.","Go ahead, quickly.","Ok, what is it?"],
+  pi_missed:    ["Can you WhatsApp me the details?","I'll think about it.","Not really keen.","Maybe next time."],
+  pi_ignored:   ["I don't need this.","I said not interested already.","Ok, goodbye.","Don't need, thanks."],
   s3_needsAck:  ["I don't feel like you're listening.","You haven't acknowledged what I said.","Did you hear what I said?","I said I'm young — that's my point."],
-  s3_needsRfm:  ["Ok... so then what are you suggesting?","And why does that matter for me now?","I hear you, but what's your point for someone my age?","Ok, I get what you're saying. What do you actually want?","Ok lah, what is it?","So what are you getting at?","And this affects me how?","Yah ok, what do you want me to do about it?","Get to the point lah."],
-  s3_handled:   ["Hmm... ok I never thought of it that way.","15 minutes only ah?","Ok lah, maybe can consider.","Aiya fine. Saturday morning can."],
-  s3_lectured:  ["Yah yah I know. Maybe next time lah.","Ok I'll think about it.","Don't need to explain so much.","Aiya later lah."],
-  s3_noAsk:     ["Ok... so what are you suggesting?","And then what?","Ok. What do you want me to do?","Right. So what's the next step?","So what does this involve?","What exactly are you proposing?","Ok lah. So what happens next?","What step do you want me to take?"],
-  s3_cleared:   ["Ok, and how long would this take?","Alright. What exactly would we cover?","Fine. So when are you thinking?","Ok lah. How does this work?"],
-  s3_wrongLang: ["Mm... not sure this is relevant to me.","I don't really have those kind of concerns yet.","Aiya not applicable lah.","I'll think about it."],
+  s3_needsRfm:  ["Ok, so then what are you suggesting?","And why does that matter for me now?","I hear you, but what's your point for someone my age?","Ok, I get what you're saying. What do you actually want?","So what are you getting at?","And this affects me how?","What do you want me to do about it?","Get to the point."],
+  s3_handled:   ["Hmm, ok I never thought of it that way.","Only 15 minutes?","Ok, maybe I can consider that.","Fine. When are you thinking?"],
+  s3_lectured:  ["Ok, I get it. Maybe next time.","Ok I'll think about it.","You don't need to explain so much.","Let's talk another time."],
+  s3_noAsk:     ["Ok, so what are you suggesting?","And then what?","Ok. What do you want me to do?","Right. So what's the next step?","So what does this involve?","What exactly are you proposing?","What step do you want me to take?"],
+  s3_cleared:   ["Ok, and how long would this take?","Alright. What exactly would we cover?","Fine. So when are you thinking?","Ok. How does this work?"],
+  s3_wrongLang: ["I'm not sure this is relevant to me.","I don't really have those kind of concerns yet.","I don't think that applies to me.","I'll think about it."],
   s3_exit:      ["Not interested. Goodbye.","I said no thanks.","Please don't call me again.","I'm hanging up now."],
-  s4_accept:    ["Ok lah. Saturday morning can.","Fine. Tuesday 8pm.","Aiya ok. Saturday.","Ok ok. Tuesday then.","Saturday can lah.","Fine. Tuesday evening.","Ok lah, Saturday morning. 15 minutes only ah.","Alright. Tuesday 8pm works.","Ok, I will put it in. Saturday morning.","Fine, let's do Tuesday."],
-  s4_condition: ["WhatsApp me first lah then I confirm.","Ok but keep it to 15 minutes ah.","Can. But don't be late.","Saturday can. But really 15 minutes only."],
-  s4_delay:     ["I'll think about it lah.","Maybe next time.","Can WhatsApp me? I'll get back to you.","Let me check first."],
-  s4_noTimebox: ["How long would this take exactly?","What kind of time commitment are we talking?","How long is this meeting?","Wait — how long is this going to be?","Eh how long ah?","Can you give me a time frame?","How many minutes are we talking?","I need to know how long before I commit."],
+  s4_accept:    ["__TIME_ACCEPT__"],
+  s4_condition: ["Can you WhatsApp me the details first?","Ok, but keep it to 15 minutes.","Sure. But don't be late.","Ok, but really 15 minutes only.","Send me a WhatsApp and I'll confirm the time."],
+  s4_delay:     ["I'll think about it.","Maybe next time.","Can you WhatsApp me? I'll get back to you.","Let me check my schedule first."],
+  s4_noTimebox: ["How long would this take exactly?","What kind of time commitment are we talking?","How long is this meeting?","Wait — how long is this going to be?","Can you give me a time frame?","How many minutes are we talking?","I need to know how long before I commit."],
   s4_noOptions: ["When exactly are you thinking?","Give me some options.","What time did you have in mind?","Can you be more specific?","Any other time options?","What's the other option?"],
   s4_oneOption:  ["Any other timing that works?","Give me one more option.","What's the other time you had in mind?","Can you suggest another slot?"],
   hard_reject:  ["Not interested. Please don't call again.","I'm going to hang up now.","This is not going anywhere. Goodbye.","Don't call this number again."]
 };
+
+/* ── EXTRACT OFFERED TIME from rep's close turn ────────────────────────────
+   Returns the first clean time string found, e.g. "Monday 9am"
+   Used to build a realistic closing reply that echoes the rep's actual offer. */
+function _extractOfferedTime(text){
+  var t = text.toLowerCase();
+  var days = ["tomorrow","tonight","today","this weekend","next week",
+              "monday","tuesday","wednesday","thursday","friday","saturday","sunday",
+              "mon","tue","wed","thu","fri","sat","sun"];
+  var named = ["morning","afternoon","evening","noon","lunchtime","midday","night"];
+  var timeRx = /\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i;
+
+  // Find position of first day mention
+  var dayPos=-1, foundDay=null;
+  for(var i=0;i<days.length;i++){
+    var pos=t.indexOf(days[i]);
+    if(pos>=0&&(dayPos<0||pos<dayPos)){ dayPos=pos; foundDay=days[i]; }
+  }
+  if(foundDay) foundDay=foundDay.charAt(0).toUpperCase()+foundDay.slice(1);
+
+  // Find time token that appears AFTER the first day (or anywhere if no day)
+  // Only search up to 'or' so we don't bleed into the second option
+  var sliced = dayPos>=0 ? t.slice(dayPos) : t;
+  var orPos = sliced.indexOf(' or ');
+  var searchIn = orPos>=0 ? sliced.slice(0,orPos) : sliced;
+  var foundTime=null;
+  var tm=searchIn.match(timeRx);
+  if(tm){
+    var hr=tm[1],mn=tm[2]?":"+tm[2]:"",ap=tm[3].toLowerCase();
+    foundTime=hr+mn+ap;
+  } else {
+    for(var j=0;j<named.length;j++){
+      if(searchIn.indexOf(named[j])>=0){ foundTime=named[j]; break; }
+    }
+  }
+
+  if(foundDay&&foundTime) return foundDay+" "+foundTime;
+  if(foundDay) return foundDay;
+  if(foundTime) return foundTime;
+  return null;
+}
+
+/* Build a natural accept reply echoing the rep's offered time */
+function _buildAcceptReply(repText, lastReply){
+  var time = _extractOfferedTime(repText);
+  var templates;
+  if(time){
+    templates = [
+      time+" works for me.",
+      "Ok, "+time+" is fine.",
+      "Sure, "+time+" works.",
+      "Alright, "+time+" then.",
+      "Ok, put me down for "+time+".",
+      time+" is good for me. WhatsApp me the details.",
+      "Ok, "+time+". Send me a WhatsApp to confirm.",
+      "Fine, "+time+". WhatsApp me the details after."
+    ];
+  } else {
+    templates = [
+      "Ok, that works for me.",
+      "Alright, that time is fine.",
+      "Sure, let's do that.",
+      "Ok, put me down for that.",
+      "That works. WhatsApp me the details.",
+      "Ok, sounds good. Send me a WhatsApp to confirm."
+    ];
+  }
+  // Pick one that isn't the last reply
+  var opts = templates.filter(function(x){return x!==lastReply;});
+  return opts[Math.floor(Math.random()*opts.length)];
+}
+
 
 /* ================================================================
    GEMINI AI LAYER
@@ -881,18 +972,24 @@ async function _geminiDebrief(outcome, engineFlags){
     "Final warmth: " + engineFlags.warmth
   ].join("\n");
 
-  var prompt = "You are a cold calling coach. The rep was practicing booking a 15-minute meeting with Ethan, a 24-year-old engineer who is sceptical of cold calls.\n\n" +
-    "The rep's ONLY goal: book a short meeting. Not to explain products or convince.\n\n" +
-    "5 KEY PRINCIPLES:\n" +
-    "1. One-breath opener: name + company + one reason + ask for 20 seconds\n" +
-    "2. When Ethan gives time: one relevant observation + one light question\n" +
-    "3. When Ethan exits: ask for just one more moment (pattern interrupt)\n" +
-    "4. Use that moment: one reason + meeting ask immediately\n" +
-    "5. Meeting ask: low-commitment framing + '15 minutes' + two specific time options\n\n" +
+  var prompt = "You are a cold calling coach reviewing a practice call. The rep was trying to book a 15-minute meeting with Ethan, a 24-year-old Singaporean engineer who is sceptical of cold calls.\n\n" +
+    "The rep's ONLY goal: book a short meeting — not to explain products, not to convince, just to get a time in the diary.\n\n" +
+    "THE 5 PRINCIPLES REPS MUST FOLLOW:\n" +
+    "1. OPENER: One breath — name + company + one specific reason relevant to their age/situation + ask for 20 seconds. No pitch.\n" +
+    "2. VALUE SIGNAL: When Ethan gives time, share ONE relevant observation (not a product feature) and ask ONE light question to build curiosity.\n" +
+    "3. PATTERN INTERRUPT: When Ethan tries to exit, do NOT beg for time. Instead: pause, then ask for just one more moment with a specific hook.\n" +
+    "4. REFRAME: Use that moment to give ONE concrete reason this matters to someone their age, then immediately ask for the meeting.\n" +
+    "5. CLOSE: Low-commitment framing ('just a quick look', 'no strings') + '15 minutes' + TWO specific time options (e.g. 'Tuesday 8pm or Saturday 10am').\n\n" +
+    "EXAMPLE STRONG LINES:\n" +
+    "- Opener: 'Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. 20 seconds?'\n" +
+    "- Hook: 'Most people earning well at your stage haven't checked if their money is keeping up — that's usually when it matters most.'\n" +
+    "- Pattern interrupt: 'Before you go — one thing.'\n" +
+    "- Reframe: 'No commitment at all — just 15 minutes to see where things stand. Tuesday 8pm or Saturday 10am?'\n\n" +
     "Engine flags:\n" + flagSummary + "\n\n" +
     "Transcript:\n" + history + "\n\n" +
-    "Return ONLY this JSON, no markdown. Be direct and concise — each field max 2 sentences:\n" +
-    '{"summary":"2 sentences max — what happened and why","moments":[{"turn":"rep quote (10 words max)","issue":"one sentence on what went wrong","better":"one alternative line"}],"strengths":["one specific thing done well per item — max 2 items"],"improvements":["one specific fix per item — max 2 items"],"next_call_tip":"one sentence — the single most important thing to do differently"}';
+    "YOUR TASK: Review the transcript carefully. For each moment card, quote the REP'S EXACT words (not paraphrased), identify specifically what went wrong at that moment, and give ONE concrete alternative line they could have said instead — modelled on the example strong lines above.\n\n" +
+    "Return ONLY this JSON, no markdown, no preamble:\n" +
+    '{"summary":"2 sentences — what happened overall and the single biggest reason for the outcome","moments":[{"turn":"rep exact quote, 12 words max","issue":"one sentence — what specifically went wrong here","better":"one concrete alternative line the rep could say instead"}],"strengths":["one specific observed behaviour done well — reference what they actually said, max 2 items"],"improvements":["one specific, actionable fix with example language — max 2 items"],"next_call_tip":"one sentence — the single highest-leverage change for next time"}';
 
   try {
     var resp = await fetch(GEMINI_URL, {
@@ -969,20 +1066,20 @@ var DBF = {
 
 /* ── FOUNDATION HINTS (Tier 1 — one-line action prompt) ── */
 var HINTS = {
-  s1_weak:    "Tell Ethan who you are, why you're calling, and ask for 20 seconds.",
-  s1_hasId:   "Ethan knows who you are — now give him one reason to stay on. Then ask for 20 seconds.",
-  s2_noObs:   "Share one thing relevant to where Ethan is right now. Then ask him one light question.",
-  s2_noQ:     "Good — now ask Ethan one light question to bring him into the conversation.",
-  s2_pitch:   "Too early for products. Stay at the situation level — what he might be missing, not what you're selling.",
-  s3_ack:     "Ethan raised something — show him you heard it before you say anything else.",
-  s3_reframe: "Lower the ask — make clear it's just a conversation, no commitment. Then ask for the meeting.",
-  s3_noask:   "Good — now say how long it takes and give two specific times.",
-  s4_timebox: "Tell Ethan how long the meeting takes. Then give two specific times.",
-  s4_options: "Give two specific times — day and time of day. Ethan just picks one.",
-  pi_use:     "Ethan wants to go. Ask for just one more moment before anything else.",
-  pi_window:  "Prospect gave you a moment. This is it — one reason, then ask for the meeting right now. Don't save it for next turn.",
-  pi_ignored: "Ethan said he wasn't interested. Acknowledge that first before you continue.",
-  wrong_lang: "That language may not connect with Ethan. Stay close to where he actually is right now."
+  s1_weak:    "Ethan needs four things: your name, your company, one reason, and a request for 20 seconds — all in one breath. Try: \"Hi Ethan, [name] from [company]. I help people your age [one thing]. Got 20 seconds?\"",
+  s1_hasId:   "He knows who you are — now give him one reason to stay on. Try: \"Most people your age [one relevant situation]. Got 20 seconds?\"",
+  s2_noObs:   "He's listening — share one specific thing about his situation, then ask one light question. Try: \"Most people at your stage [observation]. Is that something you've thought about?\"",
+  s2_noQ:     "Good start — now hand it to him with one question. Try: \"Is that something you've looked at?\" or \"Has that crossed your mind?\"",
+  s2_pitch:   "Too early for products — he hasn't agreed to care yet. Drop back to his situation: what he might be missing, not what you're selling.",
+  s3_ack:     "Show him you heard it before you say anything else. Try: \"No, I get that\" or \"That's fair\" — one sentence, then continue.",
+  s3_reframe: "Lower the ask, then ask for the meeting in the same breath. Try: \"Nothing to commit to — just 15 minutes to see where things stand. Tuesday 8pm or Saturday morning?\"",
+  s3_noask:   "Good — now close it. Say how long and give two times. Try: \"Just 15 minutes. Tuesday 8pm or Saturday morning — which works?\"",
+  s4_timebox: "He needs to know how long before he'll say yes. Try: \"Just 15 minutes — Tuesday 8pm or Saturday morning?\"",
+  s4_options: "Give him two specific times to pick from. Try: \"Tuesday 8pm or Saturday morning — which works better for you?\"",
+  pi_use:     "He wants to go — don't give your reason yet. Ask for one moment first. Try: \"Before you go — just one thing.\" Then stop.",
+  pi_window:  "He said ok — use it now. One reason, lower the ask, ask for the meeting. All in this turn. Try: \"Most people your age [reason]. Nothing to commit to — just 15 minutes. Tuesday 8pm or Saturday morning?\"",
+  pi_ignored: "He signalled he wanted to go and you kept going. Next time: acknowledge it first. Try: \"I hear you\" — then ask for one moment.",
+  wrong_lang: "That language doesn't connect with a 24-year-old yet. Swap \"retirement\" or \"dependants\" for something closer to where he is — his job, his company insurance, what happens if he switches roles."
 };
 
 /* ── COACHING CARDS (Tier 2 — full guidance, pulled on demand) ── */
@@ -990,84 +1087,98 @@ var COACHING = {
   s1_weak: {
     stage: "Introducing yourself",
     principle: "Ethan needs four things before he decides to stay on: your name, your company, one brief reason this might matter to him, and a request for 20 seconds — all in one breath.",
+    example: "\"Hi Ethan, [your name] from [company]. I help people your age make sure their income is actually working for them. Got 20 seconds?\"",
     why: "He's deciding in the first 10 seconds whether to keep listening. If he can't immediately answer 'who is this and why should I care?' he'll brush you off.",
     avoid: "Giving a long company intro before asking for time. Asking multiple questions. Mentioning products in your opener."
   },
   s1_hasId: {
     stage: "Giving a reason to stay on",
     principle: "Ethan knows who you are. Now give him one concrete reason to stay on — something about his situation, not your product. Then ask for 20 seconds.",
+    example: "\"Most people your age earning well haven't checked if their money is actually growing. Got 20 seconds?\"",
     why: "You've cleared the first hurdle but the line is still fragile. He needs a reason to keep listening before he'll give you time.",
     avoid: "Repeating your introduction. Jumping straight to a product before you've asked for time."
   },
   s2_noObs: {
     stage: "Sharing something relevant",
-    principle: "Ethan gave you time. Use it. Give him one specific observation about a situation people at his career stage face — something anchored to where he actually is right now.",
+    principle: "Ethan gave you time. Give him one specific observation about a situation people at his stage face — something anchored to where he actually is right now. Then ask one light question.",
+    example: "\"Most people your age are earning well but spending everything they earn — no buffer if something changes. Is that something you've thought about?\"",
     why: "Generic financial planning language doesn't land for a 24-year-old. One specific, relevant observation makes him feel like you understand his situation — not just his demographic.",
     avoid: "Starting with a product name or statistic. Anything that sounds like a pitch. Giving two observations instead of one."
   },
   s2_noQ: {
     stage: "Asking one question",
     principle: "You've shared something relevant — now ask one light question to hand the conversation to Ethan.",
+    example: "\"Is that something you've looked at?\" or \"Has that crossed your mind at all?\"",
     why: "The question does two things: it invites him in and signals you're not just broadcasting at him. Without it, the conversation stays one-sided.",
     avoid: "Asking something too personal — salary, savings, existing policies. Asking more than one question."
   },
   s2_pitch: {
     stage: "Product language too early",
     principle: "Ethan gave you time — not to hear about a product. Shift back to the situation: what he might be missing, what happens if things change at work.",
+    example: "Instead of product names, try: \"Most people your age assume their company insurance covers everything — it usually doesn't. Have you checked what yours actually covers?\"",
     why: "Mentioning specific plans or products triggers resistance before you've given him a reason to care. Products belong in the meeting.",
     avoid: "Plan names, premium amounts, coverage types, anything that sounds like you're building up to a sale."
   },
   s3_ack: {
     stage: "Ethan raised a concern",
     principle: "Ethan pushed back or gave a reason. Acknowledge it — one sentence. Show you heard him before you say anything else.",
+    example: "\"No, I get that.\" or \"That's fair — most people feel that way at your age.\" One sentence. Then continue.",
     why: "If you skip acknowledgement and go straight to your next point, he feels dismissed. One sentence lowers his guard and makes him more likely to hear what comes next.",
     avoid: "Moving straight into your reason or the meeting ask without acknowledging what he said first."
   },
   s3_reframe: {
     stage: "Lowering the ask",
     principle: "Ethan's resistance is about perceived cost — time, obligation, commitment. Make clear the meeting is just a conversation, nothing to commit to. Then ask for the meeting in the same breath.",
+    example: "\"Nothing to commit to — just 15 minutes to see where things stand. Tuesday 8pm or Saturday morning — which works?\"",
     why: "Lowering the ask without immediately following with the meeting question loses the moment. The ask belongs in the same sentence.",
     avoid: "Saying 'it's just a chat' and then pausing. The meeting question must come immediately — don't leave a gap."
   },
   s3_noask: {
     stage: "Asking for the meeting",
     principle: "You've lowered the ask — Ethan's resistance has softened. Now close. Say how long it takes, give two specific times, and let him pick one.",
+    example: "\"Just 15 minutes — no commitment. Tuesday 8pm or Saturday morning — which is easier for you?\"",
     why: "Lowering the ask without immediately following with the question loses the moment. The ask while he's warm is the close.",
     avoid: "Asking 'when are you free?' — open questions create friction. You give the times, he picks one."
   },
   s4_timebox: {
     stage: "Saying how long it takes",
-    principle: "Ethan needs to know how long before he'll commit. Say it — 15 minutes — then give two specific times.",
+    principle: "Ethan needs to know how long before he'll commit. Say it — 15 minutes — then give two specific times in the same breath.",
+    example: "\"Just 15 minutes — Tuesday 8pm or Saturday morning?\"",
     why: "'15 minutes' is something concrete he can agree to. 'A quick chat' or 'won't take long' is vague and makes it harder to say yes.",
     avoid: "Leaving the duration open. Saying 'won't take long' without naming a number. 15 minutes is the right number."
   },
   s4_options: {
     stage: "Giving two times to choose from",
     principle: "Give two specific times — day and rough time of day. Ethan just picks one. Don't ask when he's free.",
+    example: "\"Tuesday 8pm or Saturday morning — which works better for you?\"",
     why: "An open question puts all the work on him. Two specific options make the decision easy — he just picks the one that works.",
     avoid: "Asking 'when are you free?' Always give two options, not one."
   },
   pi_use: {
     stage: "Ethan wants to go",
     principle: "Ethan signalled he wants to end the call. Don't give your reason yet — ask for just one more moment first. That's the smallest ask that keeps the call alive.",
+    example: "\"Before you go — just one thing.\" Then stop. Let him respond. Don't fill the silence.",
     why: "Going straight into your reason feels pushy when he's already trying to exit. A small ask for one more moment is much easier to say yes to.",
     avoid: "Going straight into your reason or the meeting ask. He hasn't given you permission yet. One moment at a time."
   },
   pi_window: {
-    stage: "Prospect gave you a moment",
-    principle: "They said ok. Use that moment right now — one reason to care, lower the ask, ask for the meeting. All in this turn. The meeting ask cannot wait for the next turn.",
-    why: "This is the most valuable moment in the call. If you give a reason but don't ask for the meeting, the moment is gone. The next turn will be colder — the prospect gave you one window, not two.",
-    avoid: "Giving your reason and waiting to see how they respond before asking. Fill the window completely — reason, lower the ask, meeting question — done."
+    stage: "He gave you a moment — use it now",
+    principle: "He said ok. Use that moment right now — one reason to care, lower the ask, ask for the meeting. All in this turn. The meeting ask cannot wait for the next turn.",
+    example: "\"Most people your age earning well haven't built any buffer if their income stops. Nothing to commit to — just 15 minutes to see where things stand. Tuesday 8pm or Saturday morning?\"",
+    why: "This is the most valuable moment in the call. If you give a reason but don't ask for the meeting, the moment is gone. The prospect gave you one window, not two.",
+    avoid: "Giving your reason and waiting to see how he responds before asking. Fill the window completely — reason, lower the ask, meeting question — all in one breath."
   },
   pi_ignored: {
     stage: "Ethan's signal was missed",
-    principle: "Ethan signalled he wanted to go and you continued without acknowledging it. For next time — when he signals exit, acknowledge it first, then ask for one more moment.",
+    principle: "Ethan signalled he wanted to go and you continued without acknowledging it. Next time — when he signals exit, acknowledge it first, then ask for one more moment.",
+    example: "When he says 'not interested': \"Fair enough. Just one thing — then it's up to you.\" Don't argue, don't pitch. Just ask for the moment.",
     why: "Moving past his signal without acknowledging it makes him feel unheard. That's when calls close down for good.",
     avoid: "Continuing as if he didn't say it. One acknowledgement sentence changes everything."
   },
   wrong_lang: {
     stage: "Language didn't connect",
-    principle: "Some of what you said didn't connect with Ethan's life right now. He's 24 and just started working. Stay close to what's real for him — his company insurance, his job, what happens if things change.",
+    principle: "Some of what you said didn't connect with Ethan's life right now. He's 24, just started working. Stay close to what's real for him — his company insurance, his job, what changes if he switches roles.",
+    example: "Instead of \"retirement planning\", try: \"Most people your age assume their company covers them — they don't check what happens when they leave or switch jobs.\"",
     why: "Language about retirement, dependants, or family protection has no anchor for him yet. It signals you don't understand where he is.",
     avoid: "Retirement, dependants, death benefits, estate planning — anything that belongs to a different life stage."
   }
@@ -1888,7 +1999,7 @@ function _doTurn(raw){
   }
 
   var situation = _situationLabel(_S.phase, _S.state);
-  return {hint:hint, hintKey:hintKey||"", critical:critical, ended:ended, warmth:_S.warmth, phase:_S.phase, state:_S.state, situation:situation};
+  return {hint:hint, hintKey:hintKey||"", critical:critical, ended:ended, reply:reply, warmth:_S.warmth, phase:_S.phase, state:_S.state, situation:situation};
 }
 
 /* ── ASYNC TURN — wraps _doTurn and calls Gemini for reply ── */
@@ -1900,19 +2011,30 @@ async function _doTurnAsync(text){
   // This prevents voice recognition from submitting new turns during Gemini latency
   if(result.ended && _S){ _S.status = "ended"; }
 
-  // Get Gemini reply
-  var aiReply = await _geminiReply(result.situation, text);
+  // If call ended, use the pool reply directly — no need for Gemini
+  var aiReply;
+  if(result.ended && result.reply){
+    // For accept outcomes, build a reply that echoes the rep's actual offered time
+    if(_S && _S.endReason === "accept"){
+      aiReply = _buildAcceptReply(text, _S.lastReply);
+    } else {
+      aiReply = result.reply;
+    }
+  } else {
+    // Get Gemini reply for active turns
+    aiReply = await _geminiReply(result.situation, text);
 
-  // Fallback to pool if Gemini fails
-  if(!aiReply){
-    var fallbackPools = {
-      "EARLY_EXIT": POOLS.obj_early,
-      "PI_WINDOW":  POOLS.pi_window,
-      "ACK":        POOLS.s3_needsAck,
-      "REFRAME":    POOLS.s3_needsRfm
-    };
-    var fb = fallbackPools[result.state] || POOLS.p2_entry;
-    aiReply = _pickNo(fb, _S.lastReply);
+    // Fallback to pool if Gemini fails
+    if(!aiReply){
+      var fallbackPools = {
+        "EARLY_EXIT": POOLS.obj_early,
+        "PI_WINDOW":  POOLS.pi_window,
+        "ACK":        POOLS.s3_needsAck,
+        "REFRAME":    POOLS.s3_needsRfm
+      };
+      var fb = fallbackPools[result.state] || POOLS.p2_entry;
+      aiReply = _pickNo(fb, _S.lastReply);
+    }
   }
 
   // Update reply-type classifier hint based on what Gemini actually said
@@ -2054,6 +2176,14 @@ var UI = (function(){
 
       document.getElementById("coaching-stage").textContent = card.stage;
       document.getElementById("coaching-principle").textContent = card.principle;
+      var exSection = document.getElementById("coaching-example-section");
+      var exEl = document.getElementById("coaching-example");
+      if(card.example){
+        exEl.textContent = card.example;
+        exSection.style.display = "block";
+      } else {
+        exSection.style.display = "none";
+      }
       document.getElementById("coaching-why").textContent = card.why || "";
       document.getElementById("coaching-avoid").textContent = card.avoid;
 
@@ -2877,7 +3007,8 @@ var MicController = (function(){
   var _active    = false;  // user toggled mic ON
   var _listening = false;  // recognition currently running
   var _blocked   = false;  // call is processing Ethan reply — pause mic
-  var _finalised = false;  // prevent double-send
+  var _finalised = false;
+    var _sendTimer  = null;  // prevent double-send
   var _restartTimer = null;
 
   // ── Internal helpers ──────────────────────────────────────
@@ -2990,20 +3121,21 @@ var MicController = (function(){
         document.getElementById("send-btn").disabled = false;
 
         // Block immediately so onend restart doesn't fire before send
-        if(!_finalised){
-          _finalised = true;
-          _blocked = true;  // prevent onend from restarting recognition
-          if(_restartTimer) clearTimeout(_restartTimer);
-          setTimeout(function(){
-            if(inp.value.trim()){
-              UI.sendMessage();  // sendMessage will call MicController.block() then unblock() after reply
-            } else {
-              // Input was cleared externally — unblock so mic can resume
-              _blocked = false;
-              if(_active) _scheduleRestart(300);
-            }
-          }, 400);
-        }
+        // Cancel any pending send — new final result may follow if rep was mid-sentence
+        if(_sendTimer) clearTimeout(_sendTimer);
+        _finalised = true;
+        _blocked = true;  // prevent onend from restarting recognition
+        if(_restartTimer) clearTimeout(_restartTimer);
+        _sendTimer = setTimeout(function(){
+          _sendTimer = null;
+          if(inp.value.trim()){
+            UI.sendMessage();  // sendMessage will call MicController.block() then unblock() after reply
+          } else {
+            // Input was cleared externally — unblock so mic can resume
+            _blocked = false;
+            if(_active) _scheduleRestart(300);
+          }
+        }, 600);
       } else if(interim) {
         // Show interim text in muted style — clear any pending restart
         if(_restartTimer) clearTimeout(_restartTimer);
