@@ -1869,6 +1869,7 @@ function _initSession(){
     waitingForObj:false,
     earlyExitFired:false, piHandled:false, earlyExitMissed:false, earlyExitIgnored:false,
     wrongLangCount:0, lectureDetected:false, pitchDetected:false, fearDetected:false,
+    abuseCount:0, nonsenseStreak:0,
     warmth:ws, bt:bt, turn:1, maxTurns:14,
     p4FollowUps:0,
     status:"active", endReason:null,
@@ -1953,7 +1954,7 @@ function _isGiveUp(text){
 /* ── MAIN TURN ── */
 function _doTurn(raw){
   if(!_S||_S.status!=="active") return null;
-  var text=raw.trim(); if(!text) return null;
+  var text=raw.trim(); if(!text) return {reply:"", hint:"", hintKey:"", critical:"", ended:false};
   var I=_extractIntents(text), f=I.flags, ph=_S.phase, st=_S.state;
   _S.transcript.push({role:"rep",text:text,turn:_S.turn});
   var bk=_bkt(f,ph,st);
@@ -1962,6 +1963,10 @@ function _doTurn(raw){
   if(f.hasPitch) _S.pitchDetected=true;
   if(f.hasFear)  _S.fearDetected=true;
   if(f.hasWrongLang) _S.wrongLangCount++;
+  if(f.hasMeet) _S.closeAttempted=true;
+  // Track consecutive no-intent turns (potential nonsense/gibberish)
+  var hasAnyIntent = f.hasIdentity||f.hasReason||f.hasMicroReason||f.hasPermission||f.hasPatternInterrupt||f.hasHook||f.hasLightQ||f.hasMeet||f.hasAck||f.hasReframe||f.hasPitch||f.hasFear||f.hasWrongLang;
+  if(hasAnyIntent) _S.nonsenseStreak=0; else _S.nonsenseStreak=(_S.nonsenseStreak||0)+1;
   var delta=_warmthDelta(f,{phase:ph,state:st,isRepeat:rep});
   _S.warmth=Math.max(0,Math.min(100,_S.warmth+delta));
   // If lecture penalty pushed warmth very low, end call rather than getting stuck
@@ -1975,8 +1980,12 @@ function _doTurn(raw){
   /* Instant ends */
   if(_isRude(text,I.wordCount)){
     _S.warmth=0; reply=_pick(POOLS.hard_reject); _S.status="ended"; _S.endReason="hardReject"; ended=true;
-  } else if(_isGiveUp(text)&&ph>=2&&!ended){
+  } else if(!ended&&ph>=2&&_S.nonsenseStreak>=3){
+    // Three consecutive turns with zero recognisable intent — confused hang-up
+    reply=_pick(["I'm not sure what you're trying to say. I'll have to go.","I'm not following this. I'm going to hang up now.","I really can't make sense of this conversation. Bye."]); _S.status="ended"; _S.endReason="hardReject"; ended=true;
+  } else if(_isGiveUp(text)&&ph>=2&&!ended&&_S.endReason!=="accept"&&_S.endReason!=="delay"&&!_S.closeAttempted){
     // Rep says goodbye/gives up — Ethan is confused then line goes dead
+    // (but not if call already ended in booking/delay, or rep already made a complete close)
     reply=_pick(["Hello? You still there?","Ok... bye then.","Uh... ok. Bye."]);
     _S.status="ended"; _S.endReason="repGaveUp"; ended=true;
   } else if(f.tooPersonal){
@@ -2040,8 +2049,8 @@ function _doTurn(raw){
           _S.state="ACK"; _S.objStep="ack";
           // Ethan is about to push back — prime rep for the pattern interrupt
           hint=HINTS.pi_use; hintKey="pi_use";
-        } else if(!_S.reasonSeen){
-          // Rep hasn't given a hook — nudge
+        } else if(!_S.reasonSeen&&!f.hasReason&&!f.hasMicroReason){
+          // Rep hasn't given a hook at all — nudge
           reply=_pickMemory(POOLS.s2_noObs,_S.lastReply);
           // If Ethan's reply was identity-asking, coaching card should address that first
           if(_S.askedAbout.whoIsThis){
@@ -2050,8 +2059,9 @@ function _doTurn(raw){
             hint=HINTS.s2_noObs; hintKey="s2_noObs";
           }
         } else {
-          // Has reason but no question — nudge toward a question
-          reply=_pickMemory(POOLS.s2_noQ,_S.lastReply); hint=HINTS.s2_noQ; hintKey="s2_noQ";
+          // Rep gave a hook but Ethan exited anyway — nudge toward pattern interrupt
+          // Don't show the hook tip again — they already used one
+          reply=_pickMemory(POOLS.s2_noQ,_S.lastReply); hint=HINTS.pi_use; hintKey="pi_use";
         }
         if(!ended&&!_S.earlyExitFired){
           _S.earlyExitFired=true; _S.phase=3; _S.waitingForObj=true;
@@ -2103,7 +2113,7 @@ function _doTurn(raw){
         // But block if rep used fear tactics or wrong language — coach them instead
         if((f.hasMeet||f.hasReframe)&&f.hasTimebox&&f.hasTwoOptions&&!f.hasFear&&!f.hasWrongLang){
           _S.phase=4; _S.state="";
-          _S.closeHadTimebox=f.hasTimebox||false; _S.closeHadTwoOptions=f.hasTwoOptions||false; _S.closeHadReframe=f.hasReframe||false;
+          _S.closeHadTimebox=f.hasTimebox||false; _S.closeHadTwoOptions=f.hasTwoOptions||false; _S.closeHadReframe=f.hasReframe||false; _S.closeAttempted=true;
           var pioc=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=pioc; ended=true;
           reply=pioc==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):pioc==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
         // Track B compressed: rep gave reason+hook inside window — move to REFRAME for close
@@ -2160,7 +2170,7 @@ function _doTurn(raw){
         } else if((f.hasReframe&&f.hasMeet)||(f.hasReframe&&f.hasTimebox&&f.hasTwoOptions)){
           if(f.hasTimebox&&f.hasTwoOptions){
             _S.phase=4; _S.state="";
-            _S.closeHadTimebox=f.hasTimebox||false; _S.closeHadTwoOptions=f.hasTwoOptions||false; _S.closeHadReframe=f.hasReframe||false;
+            _S.closeHadTimebox=f.hasTimebox||false; _S.closeHadTwoOptions=f.hasTwoOptions||false; _S.closeHadReframe=f.hasReframe||false; _S.closeAttempted=true;
             var oc=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=oc; ended=true;
             reply=oc==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):oc==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
           } else {
@@ -2194,7 +2204,7 @@ function _doTurn(raw){
         reply=_pickNo(POOLS.s3_exit,_S.lastReply);
         if(_S.warmth<=20){_S.status="ended";_S.endReason="hardReject";ended=true;}
       } else if(f.hasMeet&&f.hasTimebox&&f.hasTwoOptions){
-        _S.closeHadTimebox=true; _S.closeHadTwoOptions=true; _S.closeHadReframe=f.hasReframe||false;
+        _S.closeHadTimebox=true; _S.closeHadTwoOptions=true; _S.closeHadReframe=f.hasReframe||false; _S.closeAttempted=true;
         var cr=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=cr; ended=true;
         reply=cr==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):cr==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
       } else {
