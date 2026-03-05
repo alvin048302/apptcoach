@@ -429,6 +429,113 @@
 
     ::-webkit-scrollbar { width:4px; }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+    /* ── ONBOARDING ── */
+    .ob-intro-card { background:var(--brand); border-radius:var(--r-lg); padding:32px 24px 28px; text-align:center; box-shadow:var(--shadow-lg); }
+    .ob-logo-mark { width:52px; height:52px; border-radius:14px; background:rgba(255,255,255,.2); color:#fff; font-size:14px; font-weight:980; letter-spacing:.5px; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
+    .ob-headline { margin:0 0 12px; font-size:26px; font-weight:980; color:#fff; line-height:1.25; letter-spacing:-.3px; }
+    .ob-sub { margin:0; font-size:14px; color:rgba(255,255,255,.8); font-weight:700; line-height:1.55; }
+    .ob-skip { font-size:13px!important; color:var(--muted); font-weight:700; border:none; background:transparent; box-shadow:none; }
+
+    /* Progress dots */
+    .ob-progress { display:flex; gap:8px; justify-content:center; padding:4px 0 2px; }
+    .ob-dot { width:8px; height:8px; border-radius:999px; background:var(--border); transition:background .25s,width .25s; }
+    .ob-dot.active { background:var(--brand); width:24px; }
+
+    /* Moment cards */
+    .ob-moment-card { display:none; flex-direction:column; gap:16px; background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); padding:24px 20px; box-shadow:var(--shadow); animation:obSlideIn .25s ease; }
+    .ob-moment-card.active { display:flex; }
+    @keyframes obSlideIn { from{opacity:0;transform:translateX(18px)} to{opacity:1;transform:translateX(0)} }
+
+    .ob-moment-icon { font-size:40px; line-height:1; }
+    .ob-moment-name { font-size:22px; font-weight:980; color:var(--text); letter-spacing:-.2px; }
+    .ob-moment-desc { font-size:14px; font-weight:700; color:#374151; line-height:1.6; }
+
+    /* Colour-coded example blocks */
+    .ob-example-wrap { border-radius:var(--r-sm); padding:14px 16px; display:flex; flex-direction:column; gap:6px; }
+    .ob-example-door { background:#eff6ff; border:1px solid #bfdbfe; }
+    .ob-example-exit { background:#fff7ed; border:1px solid #fed7aa; }
+    .ob-example-ask  { background:#f0fdf4; border:1px solid #bbf7d0; }
+    .ob-example-label { font-size:10px; font-weight:950; letter-spacing:.8px; text-transform:uppercase; }
+    .ob-example-door .ob-example-label { color:#1d4ed8; }
+    .ob-example-exit .ob-example-label { color:#c2410c; }
+    .ob-example-ask  .ob-example-label { color:#15803d; }
+    .ob-example-text { font-size:13px; font-weight:800; line-height:1.55; font-style:italic; }
+    .ob-example-door .ob-example-text { color:#1e3a8a; }
+    .ob-example-exit .ob-example-text { color:#7c2d12; }
+    .ob-example-ask  .ob-example-text { color:#14532d; }
+    .ob-example-note { font-size:12px; font-weight:700; color:var(--muted); }
+
+    .ob-nav { display:flex; gap:10px; }
+    .ob-nav-back { flex:0 0 auto; width:auto; padding:14px 20px; }
+    .ob-nav-next { flex:1; }
+
+    /* Replay screen */
+    .ob-replay-header { text-align:center; padding:4px 0 2px; }
+    .ob-replay-title { font-size:20px; font-weight:980; color:var(--brand-deep); }
+    .ob-replay-sub { font-size:13px; color:var(--muted); font-weight:700; margin-top:4px; }
+
+    .ob-replay-feed { display:flex; flex-direction:column; gap:10px; }
+
+    .ob-replay-turn { opacity:0; transform:translateY(8px); transition:opacity .35s ease,transform .35s ease; }
+    .ob-replay-turn.visible { opacity:1; transform:translateY(0); }
+
+    .ob-replay-moment-tag { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:950; letter-spacing:.6px; text-transform:uppercase; border-radius:999px; padding:3px 10px; margin-bottom:4px; }
+    .ob-tag-door { background:#eff6ff; color:#1d4ed8; }
+    .ob-tag-exit { background:#fff7ed; color:#c2410c; }
+    .ob-tag-ask  { background:#f0fdf4; color:#15803d; }
+
+    .ob-replay-bubble { border-radius:var(--r-sm); padding:12px 14px; font-size:14px; font-weight:700; line-height:1.55; }
+    .ob-replay-rep { background:var(--brand); color:#fff; border-radius:var(--r-sm) var(--r-sm) 4px var(--r-sm); }
+    .ob-replay-ethan { background:var(--card); border:1px solid var(--border); color:var(--text); border-radius:var(--r-sm) var(--r-sm) var(--r-sm) 4px; }
+    .ob-replay-who { font-size:10px; font-weight:950; letter-spacing:.6px; text-transform:uppercase; margin-bottom:4px; opacity:.7; }
+
+    .ob-replay-note { background:var(--warn-bg); border:1px solid var(--warn-border); border-radius:var(--r-sm); padding:13px 15px; font-size:13px; font-weight:700; color:var(--warn-text); line-height:1.55; display:none; }
+    .ob-replay-note.visible { display:block; }
+
+    /* Reference card button on practice screen */
+    .moments-ref-btn { border:1px solid var(--border); background:var(--card); border-radius:999px; padding:7px 13px; font-weight:900; font-size:11px!important; color:#374151; cursor:pointer; box-shadow:var(--shadow-sm); white-space:nowrap; display:inline-flex; align-items:center; gap:5px; }
+
+    /* Moments reference sheet */
+    .moments-sheet { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:460px; background:var(--card); border-top:1px solid var(--border); border-radius:var(--r-lg) var(--r-lg) 0 0; box-shadow:0 -8px 32px rgba(17,24,39,.12); z-index:200; padding:20px 20px calc(20px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(100%); transition:transform .3s cubic-bezier(.4,0,.2,1); }
+    .moments-sheet.open { transform:translateX(-50%) translateY(0); }
+    .moments-sheet-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .moments-sheet-title { font-size:13px; font-weight:950; color:var(--brand-deep); letter-spacing:.3px; text-transform:uppercase; }
+    .moments-sheet-close { background:var(--soft); border:none; border-radius:999px; width:28px; height:28px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; color:var(--muted); }
+    .moments-row { display:flex; gap:12px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--border); }
+    .moments-row:last-child { border-bottom:none; }
+    .moments-row-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; }
+    .moments-row-body { flex:1; }
+    .moments-row-name { font-size:14px; font-weight:950; color:var(--text); margin-bottom:2px; }
+    .moments-row-rule { font-size:12px; font-weight:700; color:var(--muted); line-height:1.5; margin-bottom:5px; }
+    .moments-row-example { font-size:12px; font-weight:800; font-style:italic; line-height:1.5; border-radius:8px; padding:8px 10px; }
+    .moments-door-ex { background:#eff6ff; color:#1e3a8a; }
+    .moments-exit-ex { background:#fff7ed; color:#7c2d12; }
+    .moments-ask-ex  { background:#f0fdf4; color:#14532d; }
+    .moments-backdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.3); z-index:199; }
+    .moments-backdrop.open { display:block; }
+
+    /* Hook moment colour — amber/gold */
+    .ob-example-hook { background:#fefce8; border:1px solid #fde68a; }
+    .ob-example-hook .ob-example-label { color:#92400e; }
+    .ob-example-hook .ob-example-text  { color:#78350f; }
+    .ob-tag-hook { background:#fefce8; color:#92400e; }
+
+    /* Moment frequency tag */
+    .ob-moment-tag-label { display:inline-block; font-size:10px; font-weight:950; letter-spacing:.7px; text-transform:uppercase; background:var(--brand-light); color:var(--brand-deep); border-radius:999px; padding:3px 10px; }
+    .ob-tag-sometimes { background:#fefce8; color:#92400e; }
+
+    /* Scenario tabs */
+    .ob-scenario-tabs { display:flex; gap:6px; }
+    .ob-scenario-tab { flex:1; border:1px solid var(--border); background:var(--soft); border-radius:var(--r-sm); padding:9px 6px; font-size:12px!important; font-weight:900; color:var(--muted); cursor:pointer; transition:background .15s,color .15s,border-color .15s; white-space:nowrap; }
+    .ob-scenario-tab.active { background:var(--brand); color:#fff; border-color:var(--brand); }
+
+    /* Scenario label */
+    .ob-scenario-label { font-size:12px; font-weight:800; color:var(--muted); text-align:center; padding:2px 0; }
+
+    /* Updated reference card hook row */
+    .moments-hook-ex { background:#fefce8; color:#78350f; }
+    .moments-note { font-size:12px; font-weight:700; color:var(--muted); line-height:1.5; padding-top:10px; border-top:1px solid var(--border); margin-top:4px; }
   </style>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'></script>
@@ -439,7 +546,7 @@
   <!-- ══════════════════════════════════
        START SCREEN
   ══════════════════════════════════ -->
-  <div id="screen-start" class="screen active">
+  <div id="screen-start" class="screen">
 
     <div class="hero-card">
       <div class="hero-top">
@@ -519,10 +626,122 @@
 
     <button class="btn-primary" onclick="UI.goToBrief()">Continue →</button>
 
-    <div class="footer-micro">APPT.COACH · Training tool</div>
+    <div class="footer-micro">APPT.COACH · Training tool · <span style="cursor:pointer;text-decoration:underline" onclick="try{localStorage.removeItem('apptcoach_onboarded')}catch(e){}; document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')}); document.getElementById('screen-onboard-intro').classList.add('active');">View intro</span></div>
 
   </div><!-- end screen-start -->
 
+
+
+
+  <!-- ══════════════════════════════════
+       ONBOARDING — INTRO SCREEN
+  ══════════════════════════════════ -->
+  <div id="screen-onboard-intro" class="screen active">
+    <div class="ob-intro-card">
+      <div class="ob-logo-mark">AC</div>
+      <h1 class="ob-headline">Master the cold call<br>in three moments.</h1>
+      <p class="ob-sub">Ethan is 24, sceptical, and didn't ask for your call.<br>Your only goal: book a 15-minute meeting.</p>
+    </div>
+    <button class="btn-primary" onclick="UI.obNext()">Show me how →</button>
+    <button class="btn-ghost ob-skip" onclick="UI.obSkip()">Skip intro, start practising</button>
+  </div>
+
+  <!-- ══════════════════════════════════
+       ONBOARDING — THREE MOMENTS CARDS
+  ══════════════════════════════════ -->
+  <div id="screen-onboard-moments" class="screen">
+
+    <div class="ob-progress">
+      <div class="ob-dot active" id="ob-dot-0"></div>
+      <div class="ob-dot" id="ob-dot-1"></div>
+      <div class="ob-dot" id="ob-dot-2"></div>
+      <div class="ob-dot" id="ob-dot-3"></div>
+    </div>
+
+    <!-- Card 0: The Door -->
+    <div class="ob-moment-card active" id="ob-card-0">
+      <div class="ob-moment-icon ob-door">🚪</div>
+      <div class="ob-moment-name">The Door</div>
+      <div class="ob-moment-tag-label">Every call</div>
+      <div class="ob-moment-desc">Get in. Name, company, one reason it might matter to him, ask for 20 seconds. One breath — don't pause in the middle.</div>
+      <div class="ob-example-wrap ob-example-door">
+        <div class="ob-example-label">Try this</div>
+        <div class="ob-example-text">"Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?"</div>
+      </div>
+    </div>
+
+    <!-- Card 1: The Hook -->
+    <div class="ob-moment-card" id="ob-card-1">
+      <div class="ob-moment-icon ob-hook">🎯</div>
+      <div class="ob-moment-name">The Hook</div>
+      <div class="ob-moment-tag-label ob-tag-sometimes">Sometimes</div>
+      <div class="ob-moment-desc">If Ethan gives you space after the opener — don't pitch. Share one observation anchored to where he actually is right now. Then ask one light question and stop talking.</div>
+      <div class="ob-example-wrap ob-example-hook">
+        <div class="ob-example-label">Try this</div>
+        <div class="ob-example-text">"Most people your age are earning well but spending everything they earn — no buffer if something changes. Is that something you've thought about?"</div>
+      </div>
+    </div>
+
+    <!-- Card 2: The Exit -->
+    <div class="ob-moment-card" id="ob-card-2">
+      <div class="ob-moment-icon ob-exit">✋</div>
+      <div class="ob-moment-name">The Exit</div>
+      <div class="ob-moment-tag-label">Almost every call</div>
+      <div class="ob-moment-desc">He pushes back. Don't argue, don't pitch. Ask for one moment only and stop talking. Wait for him to respond.</div>
+      <div class="ob-example-wrap ob-example-exit">
+        <div class="ob-example-label">Try this</div>
+        <div class="ob-example-text">"Before you go — just one thing."</div>
+        <div class="ob-example-note">Then stop. Wait.</div>
+      </div>
+    </div>
+
+    <!-- Card 3: The Ask -->
+    <div class="ob-moment-card" id="ob-card-3">
+      <div class="ob-moment-icon ob-ask">📅</div>
+      <div class="ob-moment-name">The Ask</div>
+      <div class="ob-moment-tag-label">Every call — sometimes twice</div>
+      <div class="ob-moment-desc">Use it completely — one observation, no commitment, 15 minutes, two times. All in one breath. If he pushes back again — agree, then close with the same two options.</div>
+      <div class="ob-example-wrap ob-example-ask">
+        <div class="ob-example-label">Try this</div>
+        <div class="ob-example-text">"Nothing to commit to — just 15 minutes. Tuesday 8pm or Saturday morning?"</div>
+      </div>
+    </div>
+
+    <div class="ob-nav">
+      <button class="btn-ghost ob-nav-back" id="ob-back-btn" onclick="UI.obBack()" style="display:none">← Back</button>
+      <button class="btn-primary ob-nav-next" id="ob-next-btn" onclick="UI.obNext()">Next →</button>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════
+       ONBOARDING — EXAMPLE REPLAY
+  ══════════════════════════════════ -->
+  <div id="screen-onboard-replay" class="screen">
+
+    <div class="ob-replay-header">
+      <div class="ob-replay-title">Watch one first.</div>
+      <div class="ob-replay-sub">Three ways a call can go. Tap to switch.</div>
+    </div>
+
+    <!-- Scenario tabs -->
+    <div class="ob-scenario-tabs">
+      <button class="ob-scenario-tab active" id="ob-tab-0" onclick="UI.obScenario(0)">Exits Fast</button>
+      <button class="ob-scenario-tab" id="ob-tab-1" onclick="UI.obScenario(1)">Gives Space</button>
+      <button class="ob-scenario-tab" id="ob-tab-2" onclick="UI.obScenario(2)">Pushes Back</button>
+    </div>
+
+    <!-- Scenario label -->
+    <div class="ob-scenario-label" id="ob-scenario-label">Most calls go this way.</div>
+
+    <div class="ob-replay-feed" id="ob-replay-feed"></div>
+
+    <div class="ob-replay-note" id="ob-replay-note"></div>
+
+    <button class="btn-primary" id="ob-replay-cta" style="display:none" onclick="UI.obFinish()">Ok, I'm ready →</button>
+    <button class="btn-ghost ob-skip" onclick="UI.obSkip()" id="ob-replay-skip">Skip, start practising</button>
+
+  </div>
 
   <!-- ══════════════════════════════════
        BRIEF SCREEN
@@ -583,6 +802,7 @@
       <div class="hint-dot"></div>
       <div id="hint-text">Introduce yourself, give a brief reason for calling, and ask for 20 seconds.</div>
       <button id="hint-more-btn" onclick="UI.openCoachingCard()" title="Why this matters and what to avoid">?</button>
+      <button class="moments-ref-btn" onclick="UI.openMoments()" title="Three moments reference card">🚪✋📅</button>
     </div>
 
     <!-- Critical Alert Bar (always shown when triggered) -->
@@ -963,13 +1183,16 @@ async function _geminiDebrief(outcome, engineFlags){
   var history = _buildHistory();
   var flagSummary = [
     "Outcome: " + outcome,
-    "Early exit ignored: " + engineFlags.earlyExitIgnored,
-    "Early exit missed: " + engineFlags.earlyExitMissed,
-    "Pitch detected: " + engineFlags.pitchDetected,
-    "Lecture detected: " + engineFlags.lectureDetected,
-    "Wrong language count: " + engineFlags.wrongLangCount,
+    "Early exit ignored (rep skipped PI): " + engineFlags.earlyExitIgnored,
+    "Early exit missed (rep didn\'t acknowledge exit): " + engineFlags.earlyExitMissed,
+    "Pitch detected in turn: " + engineFlags.pitchDetected,
+    "Lecture/ramble detected: " + engineFlags.lectureDetected,
+    "Wrong language count (retirement/dependants etc): " + engineFlags.wrongLangCount,
     "Total turns: " + engineFlags.turns,
-    "Final warmth: " + engineFlags.warmth
+    "Final warmth (0-100): " + engineFlags.warmth,
+    "Close had timebox (said how long): " + engineFlags.closeHadTimebox,
+    "Close had two options: " + engineFlags.closeHadTwoOptions,
+    "Close had reframe: " + engineFlags.closeHadReframe
   ].join("\n");
 
   var prompt = "You are a cold calling coach reviewing a practice call. The rep was trying to book a 15-minute meeting with Ethan, a 24-year-old Singaporean engineer who is sceptical of cold calls.\n\n" +
@@ -987,7 +1210,15 @@ async function _geminiDebrief(outcome, engineFlags){
     "- Reframe: 'No commitment at all — just 15 minutes to see where things stand. Tuesday 8pm or Saturday 10am?'\n\n" +
     "Engine flags:\n" + flagSummary + "\n\n" +
     "Transcript:\n" + history + "\n\n" +
-    "YOUR TASK: Review the transcript carefully. Be fair and accurate — only flag a moment as wrong if the rep clearly made an error. Do not flag turns that are partially correct or follow the right structure but missed one small element. For each moment card, quote the REP'S EXACT words (not paraphrased), identify specifically what went wrong at that moment, and give ONE concrete alternative line they could have said instead — modelled on the example strong lines above. Limit to maximum 3 moment cards — only the most impactful errors.\n\n" +
+    "YOUR TASK: Review the transcript carefully using the engine flags above as ground truth for what actually went wrong.\n" +
+    "CRITICAL RULES for moment cards:\n" +
+    "- If closeHadTimebox is FALSE: the rep did not say how long the meeting takes. Flag that specifically.\n" +
+    "- If closeHadTwoOptions is FALSE: the rep gave only one time option. Flag that specifically.\n" +
+    "- If closeHadReframe is FALSE: the rep did not lower the ask. Flag that specifically.\n" +
+    "- If a turn has reframe + meet + two options but NO timebox — the issue is missing duration, NOT missing reframe.\n" +
+    "- If the rep said their name, company AND asked for time — the opener is CORRECT even if they missed the reason. Do not flag the opener as fully wrong.\n" +
+    "- Only flag a moment as wrong if the rep CLEARLY made an error. Do not penalise partial turns that followed the right structure.\n" +
+    "For each moment card: quote the REP'S EXACT words (not paraphrased), state the specific error using the flag data, and give ONE concrete alternative line. Maximum 3 moment cards.\n\n" +
     "Return ONLY this JSON, no markdown, no preamble:\n" +
     '{"summary":"2 sentences — what happened overall and the single biggest reason for the outcome","moments":[{"turn":"rep exact quote, 12 words max","issue":"one sentence — what specifically went wrong here","better":"one concrete alternative line the rep could say instead"}],"strengths":["one specific observed behaviour done well — reference what they actually said, max 2 items"],"improvements":["one specific, actionable fix with example language — max 2 items"],"next_call_tip":"one sentence — the single highest-leverage change for next time"}';
 
@@ -1188,7 +1419,7 @@ var COACHING = {
 var TIPS_CONTENT = {
   howto: {
     title: "How it works",
-    body:  "APPT.COACH simulates a cold call. You type or say your lines, the prospect responds based on what you say and how you handle each moment.\n\nYour only goal: book a short 15-minute meeting. Not to explain everything — just to get the meeting.\n\nThe simulation tracks the call based on your language and how you handle what the prospect throws at you. At the end you get a read on how the call went and one specific thing to work on.\n\n──────────────────\nWHAT YOU NEED TO DO\n──────────────────\n\nCalls don't follow a clean sequence. What you need to handle depends on what the prospect says. There are a few situations that come up on every call:\n\nProspect doesn't know who you are\nTell them your name, your company, one reason for calling, and ask for 20 seconds.\n\nProspect is listening but hasn't engaged\nShare one thing relevant to where they are right now. Ask one light question.\n\nProspect wants to exit\nDon't argue. Ask for just one more moment.\n\nProspect gave you a moment\nGive your one reason to care. Lower the ask. Ask for the meeting — all in one breath. Don't save the meeting ask for the next turn.\n\nProspect raised a concern\nAcknowledge it first — one sentence. Then give your reason and lower the ask.\n\nProspect asked about the meeting\nSay how long it takes. Give two specific times. Let them pick one.\n\nProspect said WhatsApp me\nAgree — and suggest a specific time in the same breath.\n\nProspect said maybe next time\nTreat it the same as wanting to exit. Ask for one more moment before accepting the deferral.\n\n──────────────────\nHOW IT USUALLY GOES\n──────────────────\n\nMost of the time, the prospect will push back straight after your intro — before you've shared anything. That's normal. The whole call often happens in one exchange: ask for a moment, get it, give your reason, lower the ask, ask for the meeting.\n\nThe one thing to remember: never argue with the pushback. Ask for one more moment. Use that moment. Then ask for the meeting.\n\n──────────────────\nEXAMPLE\n──────────────────\n\nSarah, 29, Marketing Executive.\n\nSarah: Hello?\nRep: Hi Sarah, Marcus from Great Eastern. I help people your age make sure their income is actually working for them. Got 20 seconds?\nSarah: Sorry, not interested.\n\nRep: Fair enough. Just one thing — then it's up to you.\nSarah: Ok, quickly.\n\nRep: Most people your age are earning well but haven't checked if it's building toward anything. Nothing to commit to — just 15 minutes to see where things stand. Saturday morning or Tuesday evening?\nSarah: Can you WhatsApp me instead?\n\nRep: Of course — I'll send you a message. How does Tuesday evening look for a quick 15 minutes?\nSarah: Yeah, Tuesday evening works actually.\n\nNotice: Sarah pushed back twice. The rep didn't argue either time. First pushback — asked for one moment. Second pushback (WhatsApp) — agreed and immediately suggested a specific time."
+    body:  "A cold call simulator. Your only goal: book a 15-minute meeting with Ethan — a 24-year-old engineer who didn't ask for your call.\n\n──────────────────\nFOUR MOMENTS\n──────────────────\n\n🚪 THE DOOR — every call\nName, company, one reason it might matter to him, ask for 20 seconds. One breath.\n\n🎯 THE HOOK — sometimes\nIf Ethan gives you space after the opener, share one observation and ask one light question. Don't pitch.\n\n✋ THE EXIT — almost every call\nHe pushes back. Ask for one moment only. Stop talking. Wait.\n\n📅 THE ASK — every call, sometimes twice\nOne observation, no commitment, 15 minutes, two times. All in one breath. If he pushes back again — agree, then close with the same two options.\n\n──────────────────\nTHREE WAYS A CALL CAN GO\n──────────────────\n\nHe Exits Fast — most common\nEthan pushes back right after the opener. Door → Exit → Ask. Stay calm, hold the line, close completely.\n\nHe Gives You Space — sometimes\nEthan doesn't push back. He gives you a moment to speak. Door → Hook → Ask. Use one observation, one question, then close.\n\nHe Pushes Back Twice — happens\nEthan pushes back even after The Ask. Agree with the deflection, then close again with the same two options.\n\n──────────────────\nEXAMPLE — He Exits Fast\n──────────────────\n\n🚪 \"Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?\"\nEthan: \"Not interested.\"\n\n✋ \"Before you go — just one thing.\"\nEthan: \"Ok, quickly.\"\n\n📅 \"Most people your age are earning well but haven't checked if it's building toward anything. Nothing to commit to — just 15 minutes. Tuesday 8pm or Saturday morning?\"\nEthan: \"Tuesday 8pm works.\"\n\nThe one thing to remember: never argue with pushback. Ask for one moment. Use that moment. Get the meeting."
   },
   modes: {
     title: "Practice modes",
@@ -1413,7 +1644,7 @@ function _extractIntents(raw){
 
   var hasPitch = _any(t,["whole life","term life","critical illness","ci plan","ci policy","endowment","ilp","investment-linked","unit trust","hospitalisation plan","shield plan","medishield","prushield","avivashield","great eastern shield","income shield","axa shield","sum assured","coverage amount","death benefit","tpd benefit","your premium payment","annual premium","monthly premium","quarterly premium","premium amount","policy number","policy anniversary","policy lapse","underwriting","exclusion clause","beneficiary","nomination","nominee","surrender value","cash value","projected value","rider","add-on rider","hospital rider","ci rider","term plan","term insurance","whole life insurance","protection gap","coverage gap","underinsured","mortality rate","morbidity","actuarial","compare plans","compare policies","compare products","product comparison","proposal","product brochure","buy a plan","purchase a plan","take up a plan","sign up for","sign up today","limited time","promotion ends"]);
   var hasFear = _any(t,["what if you die","if something happens to you","when you pass","critical illness can wipe","you could get sick","suddenly fall sick","sudden death","unexpected death","die without","left behind","your family will suffer","your loved ones suffer","burden on your family","outlive your savings","run out of money","go bankrupt","financial ruin","financial disaster","can you afford","afford treatment","cancer costs","heart attack costs","stroke costs","scare you","terrifying","scary reality","wake up call","don't wait until it's too late","too late when","by then it's too late"]);
-  var tooPersonal = _any(t,["how much do you earn","what is your salary","your monthly income","your annual income","income bracket","your take-home","how much savings","how much in your bank","your net worth","any outstanding loans","any debts","credit card debt","your cpf balance","cpf ordinary","cpf special","cpf medisave","existing policies","current policies","what policies do you have","your health condition","medical history","any pre-existing","smoker or non","are you a smoker","how many dependants","any children","are you married"]);
+  var tooPersonal = _any(t,["how much do you earn","what is your salary","your monthly income","your annual income","income bracket","your take-home","how much savings","how much in your bank","your net worth","any outstanding loans","any debts","credit card debt","your cpf balance","cpf ordinary","cpf special","cpf medisave","existing policies","current policies","what policies do you have","your health condition","medical history","any pre-existing","smoker or non","are you a smoker","how many dependants","any children","are you married","what savings","what policies","what coverage do you","existing coverage"]);
   var isRamble  = wc > 55;
   var hasMultiQ = (raw.match(/\?/g)||[]).length >= 2;
 
@@ -1436,7 +1667,7 @@ function _extractIntents(raw){
     /* ── H: Cost of living / inflation ── */
     "cost of living","rising costs","everything costs more","inflation","utilities going up","housing prices going up","things are more expensive",
     /* ── I: Singlish / natural phrasing ── */
-    "make sure you're covered","make sure covered","covered or not","clear on where you are","take stock","take a look at the big picture","put things in order","get things sorted","sort out finances","get your finances sorted","financial health check","money in order","things in order"]);
+    "make sure you're covered","make sure covered","covered or not","clear on where you are","take stock","take a look at the big picture","put things in order","get things sorted","sort out finances","get your finances sorted","financial health check","money in order","things in order","spending everything they earn","spending everything you earn","money is not growing","money not growing","money is actually working","money actually working","most people have not looked","most people havent looked","most people haven't looked","coverage drops the moment","coverage stops the moment","drops the moment you leave","drops when you leave","money sitting in bank","money sitting in a bank","sitting in a bank","options before 40","options before 35","want options before","have options before","never reviewed where","reviewed where money","where money is going","where your money is going"]);
   var hasPermission = _any(t,["20 seconds","30 seconds","a minute","two minutes","quick moment","do you have","got time","have time","spare a moment","spare me","is it ok","is now ok","ok to talk","ok if i","can i","may i","do you mind","would you mind","is this a good time","got 20","got 30","give me 20","give me 30","give me a sec","can talk","can we talk","can i ask you something","20 seconds or not","can talk or not","ok or not"]);
   var hasReason = _any(t,["most working adults","a lot of working adults","many working adults","most people your age","a lot of people your age","many people your age","most young professionals","a lot of young professionals","people who just started","guys your age","someone your age","at your stage","at this stage","at this point in","early in your career","financial plan hasn't","plan hasn't been","hasn't really been looked","set up a few years","set up years ago","put in place years ago","set and forget","back burner","been pushed","keep getting pushed","been meaning to","meaning to get to","always push it back","life changes but","life moves but","things change but","company insurance","group insurance covers","what your group","switch jobs","leave the company","change jobs","between jobs","what it actually covers","what's actually covered","what exactly covers","covered if you leave","covered if you switch","group insurance gap","don't know what","most people don't know","most people don't realise","financial independence","retire early","retire at","retire before","options later","options at 30","options at 35","have options","not just saving","earning well but","earning but not","making your money","money working","working toward something","know where you stand","where you actually stand","gap between","blind spot","blind spots","something missing","starting young","start early","starting early","start at 24","start now",
     /* ── A: Income & cash flow ── */
@@ -1454,15 +1685,15 @@ function _extractIntents(raw){
     /* ── G: Financial independence ── */
     "people your age are thinking about financial independence","most people want options before 40","being able to take a career break without panic","having enough to not worry about a pay cut","not being stuck in a job just for the money","having choices when life changes",
     /* ── H: Cost of living / inflation ── */
-    "cost of living has outpaced salary growth","real income has actually fallen","expenses grow faster than income","same salary buys less than it did","inflation means you need more than you think"]);
+    "cost of living has outpaced salary growth","real income has actually fallen","expenses grow faster than income","same salary buys less than it did","inflation means you need more than you think","help people your age","help someone your age","help working professionals","help young professionals","when you job hop","job hop your","when you switch jobs your","switch jobs your coverage","salary increment does not","increment does not mean","salary increment doesn't","your financial direction","financial direction","help with your financial","make your money work","your money work for you","money work for you","income is working hard but money"]);
   var hasQMark = raw.indexOf("?")>=0;
-  var lqp = ["when did you last","when was the last","last time you","have you had a chance","have you ever","ever had a proper","has it been a while","been a while since","a while since you","has anything changed","anything major changed","anything shifted","would you say","does that sound","sound familiar","ring a bell","crossed your mind","on your mind","thinking about","have you looked","have you checked","have you reviewed","is that where you're at","is that familiar","can relate","know what it covers","know what's covered","checked what","understand what","sure what your","clear on what","thought about","considered that","thought about this","is that something","is there anything","ever thought","give it thought","something you've","you've considered","you've thought","have you given","given it any","any thought to","thought to that","something to think","thought much about","considered this","relate to that","does that apply","apply to you","relevant to you","familiar to you","sound like you","like your situation","your situation","at your stage","at your age"];
+  var lqp = ["when did you last","when was the last","last time you","have you had a chance","have you ever","ever had a proper","has it been a while","been a while since","a while since you","has anything changed","anything major changed","anything shifted","would you say","does that sound","sound familiar","ring a bell","crossed your mind","on your mind","thinking about","have you looked","have you checked","have you reviewed","is that where you're at","is that familiar","can relate","know what it covers","know what's covered","checked what","understand what","sure what your","clear on what","thought about","considered that","thought about this","is that something","is there anything","ever thought","give it thought","something you've","you've considered","you've thought","have you given","given it any","any thought to","thought to that","something to think","thought much about","considered this","relate to that","does that apply","apply to you","relevant to you","familiar to you","sound like you","like your situation","your situation","at your stage","at your age","is there something you","something you have considered","given thought to","where you are at","you are at right now","where are you at","does that resonate","that resonate with you","resonate with"];
   var lqt = ["when","have you","did you","are you","do you","would you","has that","is that"];
   var hasLightQ = !tooPersonal&&!hasMultiQ&&!hasPitch&&(lqp.some(function(p){return t.indexOf(p)>=0;})||(lqt.some(function(p){return t.indexOf(p)>=0;})&&hasQMark));
-  var hasAck = _any(t,["i understand","i get it","i get that","got it","i see","fair enough","that is fair","thats fair","makes sense","that makes sense","understandable","totally understandable","noted","of course","no worries","not a problem","not at all","absolutely","totally","totally fair","totally get","totally understand","completely understand","i hear you","i hear that","i appreciate","appreciate that","i respect","respect that","most people feel","a lot of people","many people feel","you're not alone","youre not alone","not alone","that's common","thats common","very common","right right","i see i see","sure","for sure","definitely","valid","reasonable","you are right","youre right","that is right","exactly","ya fair","ya fair lah","yah fair","yah lah","yah i know","yah makes sense","ok ok i understand","ok ok i get","aiya i know","aiya i understand","good to know","good to hear","fair lah","fair enough lah","yah totally","totally lah","yah totally fair"]);
+  var hasAck = _any(t,["i understand","i get it","i get that","got it","i see","fair enough","that is fair","thats fair","makes sense","that makes sense","understandable","totally understandable","noted","of course","no worries","not a problem","not at all","absolutely","totally","totally fair","totally get","totally understand","completely understand","i hear you","i hear that","i appreciate","appreciate that","i respect","respect that","most people feel","a lot of people","many people feel","you're not alone","youre not alone","not alone","that's common","thats common","very common","right right","i see i see","sure","for sure","definitely","valid","reasonable","you are right","youre right","that is right","exactly","ya fair","ya fair lah","yah fair","yah lah","yah i know","yah makes sense","ok ok i understand","ok ok i get","aiya i know","aiya i understand","good to know","good to hear","fair lah","fair enough lah","yah totally","totally lah","yah totally fair","yeah that's fair","yeah thats fair","that's really fair","that's completely fair","people your age feel the same","most people feel the same","a lot of people feel that way"]);
   var hasClarify = !tooPersonal&&!hasMultiQ&&hasQMark&&_any(t,["just to understand","just so i know","just to check","just to clarify","just want to understand","help me understand","can i ask","may i ask","can i just check","is it mainly","is it more","is it the timing","is it that you","is it because","is it mostly","is it primarily","making you hesitate","holding you back","your main concern","not sure it's relevant","not sure whats involved","worried about","what is it that","what's making you","whats making you","what's stopping you","whats stopping you"]);
   var hasTbRx = /\b\d{1,2}\s*(?:min(?:ute)?s?|mins?|seconds?|secs?)\b/i.test(raw);
-  var hasReframe = _any(t,["not about changing","isn't about changing","nothing to change","no commitment","no obligation","nothing to commit","nothing to decide","no need to decide","nothing to sign","nothing to buy","no need to buy","just a review","just a check","just to see","just to make sure","just to ensure","just to confirm","just clarity","just making sure","just want to check","purely to check","purely a check","just to give you","just to see if","just to find out","not selling","not here to sell","no selling","not a sales call","isn't a sales call","not looking to sell","not trying to sell","not pitching","no pitch","no hard sell","no pressure","zero pressure","not pushing","nothing to push","won't take long","wont take long","will not take long","very quick","very brief","quick one","short one","you decide","up to you","your call","no need to commit","15 minutes only","20 minutes only","15 mins only","20 mins only","15 minutes max","20 minutes max","15-minute","20-minute","nothing to buy lah","no need buy","just see only","check only","confirm only","just confirm","specific to your situation","hard to put in a message","informational","just information","just to let you know","know where you stand","just to know","make sure you have a clear","clarity on where"])||hasTbRx;
+  var hasReframe = _any(t,["not about changing","isn't about changing","nothing to change","no commitment","no obligation","nothing to commit","nothing to decide","no need to decide","nothing to sign","nothing to buy","no need to buy","just a review","just a check","just to see","just to make sure","just to ensure","just to confirm","just clarity","just making sure","just want to check","purely to check","purely a check","just to give you","just to see if","just to find out","not selling","not here to sell","no selling","not a sales call","isn't a sales call","not looking to sell","not trying to sell","not pitching","no pitch","no hard sell","no pressure","zero pressure","not pushing","nothing to push","won't take long","wont take long","will not take long","very quick","very brief","quick one","short one","you decide","up to you","your call","no need to commit","15 minutes only","20 minutes only","15 mins only","20 mins only","15 minutes max","20 minutes max","15-minute","20-minute","nothing to buy lah","no need buy","just see only","check only","confirm only","just confirm","specific to your situation","hard to put in a message","informational","just information","just to let you know","know where you stand","just to know","make sure you have a clear","clarity on where","see how first","see first","see only","no need decide","no need to decide now","decide later","no rush to decide","have a look first","look first then decide","just to explore","just exploring","just to find out more","find out more first","whatsapp me the details","send you the details"])||hasTbRx;
   var hasDismiss = _any(t,["i know i know","just listen","you need to listen","just let me","stop interrupting","you are not listening","you need to hear","i am telling you","trust me","just trust me","you should listen"]);
   var hasReschedule = _any(t,["better time","good time to call","when should i call","call you back","reach you","another time to call","whatsapp","whats app","text you","email you","send you","call you later"]);
   var hasTimebox = hasTbRx||_any(t,["10 min","15 min","20 min","30 min","10 mins","15 mins","20 mins","30 mins","10 minute","15 minute","20 minute","30 minute","10 minutes","15 minutes","20 minutes","30 minutes","half an hour","short meeting","quick meeting","short chat","quick chat","short call","quick call","short zoom","quick zoom","quick 15","quick 20","15 only","20 only","very quick","very brief","won't take long","wont take long","will not take long","very short","short lah"]);
@@ -1872,6 +2103,7 @@ function _doTurn(raw){
         // But block if rep used fear tactics or wrong language — coach them instead
         if((f.hasMeet||f.hasReframe)&&f.hasTimebox&&f.hasTwoOptions&&!f.hasFear&&!f.hasWrongLang){
           _S.phase=4; _S.state="";
+          _S.closeHadTimebox=f.hasTimebox||false; _S.closeHadTwoOptions=f.hasTwoOptions||false; _S.closeHadReframe=f.hasReframe||false;
           var pioc=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=pioc; ended=true;
           reply=pioc==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):pioc==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
         // Track B compressed: rep gave reason+hook inside window — move to REFRAME for close
@@ -1928,6 +2160,7 @@ function _doTurn(raw){
         } else if((f.hasReframe&&f.hasMeet)||(f.hasReframe&&f.hasTimebox&&f.hasTwoOptions)){
           if(f.hasTimebox&&f.hasTwoOptions){
             _S.phase=4; _S.state="";
+            _S.closeHadTimebox=f.hasTimebox||false; _S.closeHadTwoOptions=f.hasTwoOptions||false; _S.closeHadReframe=f.hasReframe||false;
             var oc=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=oc; ended=true;
             reply=oc==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):oc==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
           } else {
@@ -1961,6 +2194,7 @@ function _doTurn(raw){
         reply=_pickNo(POOLS.s3_exit,_S.lastReply);
         if(_S.warmth<=20){_S.status="ended";_S.endReason="hardReject";ended=true;}
       } else if(f.hasMeet&&f.hasTimebox&&f.hasTwoOptions){
+        _S.closeHadTimebox=true; _S.closeHadTwoOptions=true; _S.closeHadReframe=f.hasReframe||false;
         var cr=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=cr; ended=true;
         reply=cr==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):cr==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
       } else {
@@ -2083,6 +2317,206 @@ function _buildDebrief(){
   return {icon:icon, label:label, sub:sub, read:read, tip:tip};
 }
 
+
+
+/* ================================================================
+   ONBOARDING CONTROLLER
+================================================================ */
+var Onboarding = (function(){
+
+  var _step = 0;      // 0=door, 1=hook, 2=exit, 3=ask
+  var _scenario = 0;  // 0=exits fast, 1=gives space, 2=pushes back
+  var _replayIndex = 0;
+  var _replayTimer = null;
+
+  var SCENARIOS = [
+    {
+      label: 'Most calls go this way.',
+      note:  "Ethan pushed back before the opener finished. The rep didn't argue — asked for one moment, used it completely, got the meeting.",
+      turns: [
+        { role:'rep',   moment:'door', tag:'🚪 The Door',  text:'Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?' },
+        { role:'ethan', moment:null,   tag:null,            text:'Not really interested.' },
+        { role:'rep',   moment:'exit', tag:'✋ The Exit',   text:'Before you go — just one thing.' },
+        { role:'ethan', moment:null,   tag:null,            text:'Ok, quickly.' },
+        { role:'rep',   moment:'ask',  tag:'📅 The Ask',   text:"Most people your age are earning well but haven't checked if it's building toward anything. Nothing to commit to — just 15 minutes. Tuesday 8pm or Saturday morning?" },
+        { role:'ethan', moment:null,   tag:null,            text:'Tuesday 8pm works.' }
+      ]
+    },
+    {
+      label: "Sometimes Ethan gives you space. Use it.",
+      note:  "Ethan didn't push back — he gave space. The rep used it with one observation and one question, then closed directly without needing The Exit.",
+      turns: [
+        { role:'rep',   moment:'door', tag:'🚪 The Door',  text:'Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?' },
+        { role:'ethan', moment:null,   tag:null,            text:'Uh, ok. What is it?' },
+        { role:'rep',   moment:'hook', tag:'🎯 The Hook',  text:"Most people your age are earning well but spending everything they earn — no buffer if something changes. Is that something you've thought about?" },
+        { role:'ethan', moment:null,   tag:null,            text:"I mean, kind of. My company covers me though." },
+        { role:'rep',   moment:'ask',  tag:'📅 The Ask',   text:"That's the thing — most people don't know what their company cover actually includes. Nothing to commit to — just 15 minutes to take a look. Tuesday 8pm or Saturday morning?" },
+        { role:'ethan', moment:null,   tag:null,            text:'Tuesday 8pm works.' }
+      ]
+    },
+    {
+      label: "Sometimes The Ask is not enough. Stay calm and close again.",
+      note:  "Ethan pushed back after The Ask with a WhatsApp request. The rep agreed without arguing, then immediately closed again with the same two options.",
+      turns: [
+        { role:'rep',   moment:'door', tag:'🚪 The Door',  text:'Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?' },
+        { role:'ethan', moment:null,   tag:null,            text:'Not interested.' },
+        { role:'rep',   moment:'exit', tag:'✋ The Exit',   text:'Before you go — just one thing.' },
+        { role:'ethan', moment:null,   tag:null,            text:'Ok, quickly.' },
+        { role:'rep',   moment:'ask',  tag:'📅 The Ask',   text:"Most people your age are earning well but haven't checked if it's building toward anything. Nothing to commit to — just 15 minutes. Tuesday 8pm or Saturday morning?" },
+        { role:'ethan', moment:null,   tag:null,            text:'Can you just WhatsApp me instead?' },
+        { role:'rep',   moment:'ask',  tag:'📅 The Ask — again', text:"Of course — I'll send you a message. Tuesday 8pm or Saturday morning, which works better?" },
+        { role:'ethan', moment:null,   tag:null,            text:'Saturday morning then.' }
+      ]
+    }
+  ];
+
+  function _showMomentCard(idx){
+    document.querySelectorAll('.ob-moment-card').forEach(function(c){ c.classList.remove('active'); });
+    document.querySelectorAll('.ob-dot').forEach(function(d,i){ d.classList.toggle('active', i===idx); });
+    var card = document.getElementById('ob-card-'+idx);
+    if(card) card.classList.add('active');
+    var backBtn = document.getElementById('ob-back-btn');
+    if(backBtn) backBtn.style.display = idx===0 ? 'none' : '';
+    var nextBtn = document.getElementById('ob-next-btn');
+    if(nextBtn) nextBtn.textContent = idx===3 ? 'See examples →' : 'Next →';
+  }
+
+  function _loadScenario(idx){
+    if(_replayTimer){ clearTimeout(_replayTimer); _replayTimer=null; }
+    _scenario = idx;
+    _replayIndex = 0;
+
+    // Update tabs
+    document.querySelectorAll('.ob-scenario-tab').forEach(function(t,i){
+      t.classList.toggle('active', i===idx);
+    });
+
+    // Update label
+    var lbl = document.getElementById('ob-scenario-label');
+    if(lbl) lbl.textContent = SCENARIOS[idx].label;
+
+    // Clear feed and reset state
+    var feed = document.getElementById('ob-replay-feed');
+    if(feed) feed.innerHTML = '';
+    var note = document.getElementById('ob-replay-note');
+    if(note){ note.classList.remove('visible'); note.textContent = ''; }
+    var cta  = document.getElementById('ob-replay-cta');
+    if(cta) cta.style.display = 'none';
+    var skip = document.getElementById('ob-replay-skip');
+    if(skip) skip.style.display = '';
+
+    // Defer playback so DOM settles before appendChild calls
+    _replayTimer = setTimeout(_playNext, 50);
+  }
+
+  function _playNext(){
+    var script = SCENARIOS[_scenario].turns;
+    if(_replayIndex >= script.length){
+      _replayTimer = setTimeout(function(){
+        var note = document.getElementById('ob-replay-note');
+        if(note){ note.textContent = SCENARIOS[_scenario].note; note.classList.add('visible'); }
+        var cta  = document.getElementById('ob-replay-cta');
+        if(cta) cta.style.display = '';
+        var skip = document.getElementById('ob-replay-skip');
+        if(skip) skip.style.display = 'none';
+      }, 400);
+      return;
+    }
+    var feed = document.getElementById('ob-replay-feed');
+    if(!feed) return; // screen not visible, abort
+
+    var turn = script[_replayIndex];
+    _replayIndex++;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'ob-replay-turn';
+
+    if(turn.moment){
+      var mtag = document.createElement('div');
+      mtag.className = 'ob-replay-moment-tag ob-tag-'+turn.moment;
+      mtag.textContent = turn.tag;
+      wrap.appendChild(mtag);
+    }
+
+    var bubble = document.createElement('div');
+    var who = document.createElement('div');
+    who.className = 'ob-replay-who';
+    who.textContent = turn.role === 'rep' ? 'YOU' : 'ETHAN';
+    bubble.appendChild(who);
+    bubble.appendChild(document.createTextNode(turn.text));
+    bubble.className = 'ob-replay-bubble ' + (turn.role==='rep' ? 'ob-replay-rep' : 'ob-replay-ethan');
+    wrap.appendChild(bubble);
+    feed.appendChild(wrap);
+
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){ wrap.classList.add('visible'); });
+    });
+    feed.scrollTop = feed.scrollHeight;
+
+    var delay = turn.role==='rep' ? 1400 : 900;
+    _replayTimer = setTimeout(_playNext, delay);
+  }
+
+  function _show(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+  }
+
+  return {
+    start: function(){
+      try {
+        if(localStorage.getItem('apptcoach_onboarded') === '1'){
+          _show('screen-start');
+          return;
+        }
+      } catch(e){}
+      _show('screen-onboard-intro');
+    },
+
+    next: function(){
+      var cur = document.querySelector('.screen.active');
+      if(!cur) return;
+      var id = cur.id;
+      if(id === 'screen-onboard-intro'){
+        _show('screen-onboard-moments');
+        _step = 0;
+        _showMomentCard(0);
+      } else if(id === 'screen-onboard-moments'){
+        if(_step < 3){
+          _step++;
+          _showMomentCard(_step);
+        } else {
+          _show('screen-onboard-replay');
+          _loadScenario(0);
+        }
+      }
+    },
+
+    back: function(){
+      if(_step > 0){
+        _step--;
+        _showMomentCard(_step);
+      }
+    },
+
+    scenario: function(idx){
+      _loadScenario(idx);
+    },
+
+    skip: function(){
+      if(_replayTimer){ clearTimeout(_replayTimer); _replayTimer=null; }
+      try{ localStorage.setItem('apptcoach_onboarded','1'); }catch(e){}
+      _show('screen-start');
+    },
+
+    finish: function(){
+      try{ localStorage.setItem('apptcoach_onboarded','1'); }catch(e){}
+      _show('screen-start');
+    }
+  };
+
+})();
+
 /* ================================================================
    LAYER 3 — UI
 ================================================================ */
@@ -2163,6 +2597,24 @@ var UI = (function(){
 
     goToBrief: function(){
       _show("screen-brief");
+    },
+
+    // Onboarding navigation
+    obNext:        function(){ Onboarding.next(); },
+    obScenario:    function(idx){ Onboarding.scenario(idx); },
+    obBack:        function(){ Onboarding.back(); },
+    obSkip:        function(){ Onboarding.skip(); },
+    obFinish:      function(){ Onboarding.finish(); },
+    obSkipToStart: function(){ _show("screen-start"); },
+
+    // Moments reference card
+    openMoments: function(){
+      document.getElementById("moments-backdrop").classList.add("open");
+      document.getElementById("moments-sheet").classList.add("open");
+    },
+    closeMoments: function(){
+      document.getElementById("moments-backdrop").classList.remove("open");
+      document.getElementById("moments-sheet").classList.remove("open");
     },
 
     backToStart: function(){
@@ -2364,7 +2816,10 @@ var UI = (function(){
         lectureDetected: _S.lectureDetected,
         wrongLangCount: _S.wrongLangCount,
         turns: _S.turn,
-        warmth: _S.warmth
+        warmth: _S.warmth,
+        closeHadTimebox: _S.closeHadTimebox || false,
+        closeHadTwoOptions: _S.closeHadTwoOptions || false,
+        closeHadReframe: _S.closeHadReframe || false
       };
 
       var aiDebrief = await _geminiDebrief(d.label, flags);
@@ -3235,6 +3690,7 @@ var MicController = (function(){
 document.addEventListener("DOMContentLoaded", function(){
   VoiceRenderer.init();
   MicController.init();
+  Onboarding.start();
   var inp = document.getElementById("msg-input");
   inp.addEventListener("input", function(){
     this.style.height = "auto";
@@ -3246,5 +3702,50 @@ document.addEventListener("DOMContentLoaded", function(){
   });
 });
 </script>
+
+<!-- Moments reference backdrop -->
+<div class="moments-backdrop" id="moments-backdrop" onclick="UI.closeMoments()"></div>
+
+<!-- Moments reference sheet -->
+<div class="moments-sheet" id="moments-sheet">
+  <div class="moments-sheet-head">
+    <div class="moments-sheet-title">Four Moments</div>
+    <button class="moments-sheet-close" onclick="UI.closeMoments()">✕</button>
+  </div>
+  <div class="moments-row">
+    <div class="moments-row-icon">🚪</div>
+    <div class="moments-row-body">
+      <div class="moments-row-name">The Door <span style="font-size:10px;font-weight:700;color:var(--muted)">every call</span></div>
+      <div class="moments-row-rule">Name · company · one reason · ask for 20 seconds. One breath.</div>
+      <div class="moments-row-example moments-door-ex">"Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?"</div>
+    </div>
+  </div>
+  <div class="moments-row">
+    <div class="moments-row-icon">🎯</div>
+    <div class="moments-row-body">
+      <div class="moments-row-name">The Hook <span style="font-size:10px;font-weight:700;color:#92400e">sometimes</span></div>
+      <div class="moments-row-rule">If he gives you space — one observation, one light question. Stop talking.</div>
+      <div class="moments-row-example moments-hook-ex">"Most people your age are earning well but spending everything — no buffer if something changes. Is that something you've thought about?"</div>
+    </div>
+  </div>
+  <div class="moments-row">
+    <div class="moments-row-icon">✋</div>
+    <div class="moments-row-body">
+      <div class="moments-row-name">The Exit <span style="font-size:10px;font-weight:700;color:var(--muted)">almost every call</span></div>
+      <div class="moments-row-rule">He pushes back. Ask for one moment. Stop talking. Wait.</div>
+      <div class="moments-row-example moments-exit-ex">"Before you go — just one thing."</div>
+    </div>
+  </div>
+  <div class="moments-row">
+    <div class="moments-row-icon">📅</div>
+    <div class="moments-row-body">
+      <div class="moments-row-name">The Ask <span style="font-size:10px;font-weight:700;color:var(--muted)">every call · sometimes twice</span></div>
+      <div class="moments-row-rule">One observation · no commitment · 15 minutes · two times. All in one breath.</div>
+      <div class="moments-row-example moments-ask-ex">"Nothing to commit to — just 15 minutes. Tuesday 8pm or Saturday morning?"</div>
+    </div>
+  </div>
+  <div class="moments-note">If he pushes back after The Ask — agree, then close again with the same two options.</div>
+</div>
+
 </body>
 </html>
