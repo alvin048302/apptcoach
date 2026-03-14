@@ -2938,9 +2938,9 @@ var UI = (function(){
   // ── Silence timer (Advanced mode only) ─────────────────────────
   var _silenceTimer   = null;
   var _silenceOffence = 0;
-  var _SILENCE_T1 = 8000;
-  var _SILENCE_T2 = 6000;
-  var _SILENCE_T3 = 5000;
+  var _SILENCE_T1 = 15000;
+  var _SILENCE_T2 = 10000;
+  var _SILENCE_T3 = 8000;
   var _SILENCE_POOLS = [
     ["Hello? You still there?","You there?","…you going to say something?","Still there?"],
     ["Look, I don't have all day.","I'm losing you here.","I really have to go soon.","Are you still on the line?"],
@@ -3132,11 +3132,20 @@ var UI = (function(){
         _S.lastReply = first;
         _S.transcript.push({role:"prospect", text:first, turn:0});
         var firstBubble = _addBubble("prospect", first);
-        VoiceRenderer.speak(first, _S.warmth, firstBubble);
-        setTimeout(function(){
+        VoiceRenderer.speakThen(first, _S.warmth, firstBubble, function(){
           document.getElementById("send-btn").disabled = false;
           if(!MicController.isActive()) document.getElementById("msg-input").focus();
-        }, 400);
+          // Start silence timer after opening line — rep's first turn begins now
+          _startSilenceTimer();
+        });
+        // Safety: if speakThen callback never fires, unblock UI after 4s
+        setTimeout(function(){
+          if(_S && _S.status === "active" && document.getElementById("send-btn").disabled){
+            document.getElementById("send-btn").disabled = false;
+            if(!MicController.isActive()) document.getElementById("msg-input").focus();
+            _startSilenceTimer();
+          }
+        }, 4000);
       });
     },
 
