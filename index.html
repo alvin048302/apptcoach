@@ -666,7 +666,7 @@
       <div class="ob-moment-desc">Get in. Name, company, one reason it might matter to him, ask for 20 seconds. One breath — don't pause in the middle.</div>
       <div class="ob-example-wrap ob-example-door">
         <div class="ob-example-label">Try this</div>
-        <div class="ob-example-text">"Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?"</div>
+        <div class="ob-example-text">"Hi Ethan, Alvin here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is actually protected. Got 20 seconds?"</div>
       </div>
     </div>
 
@@ -994,6 +994,7 @@ var POOLS = {
   s1_neutral:   ["Hello, who is this?","Speaking. What is it?","Who are you?","Yes? What's this about?"],
   s1_distracted:["Hello?","Sorry, one second. What is it?","Hello?","Yes?"],
   p2_entry:     ["Yes? What's this about?","Speaking. What is it?","Ok, go on.","What is it?","Ok, and?"],
+  s1_no_role:   ["Ok... and what do you do exactly?","Right. And you are a...?","What is it you actually do?","Ok — what kind of work is this?","And you're calling from what capacity?"],
   s1_bad:       ["Not interested. Bye.","I'm going to stop you there.","Please don't call me again.","Not what I need right now."],
   s1_weak:      ["Who are you again?","What company is this?","Sorry, who is this calling?","Didn't catch your name.","Who is calling?","I did not catch that — who are you?","Which company is this?"],
   s2_hooked:    ["What do you mean exactly?","My company insurance isn't enough?","What exactly are you checking?","Ok, so what does that involve?"],
@@ -1007,6 +1008,11 @@ var POOLS = {
   exit_pause:   ["What one thing?","Make it quick.","Ok — what is it?","Fine. Say it.","What do you mean, one thing?","Alright. What.","Go on then.","What exactly is this one thing?"],
   mini_hook_done: ["Hmm. Ok, so what are you proposing?","I see. So what does this involve?","Ok... and what do you want me to do?","Right. So what's the next step?","Ok, fair enough. What exactly are you suggesting?","Alright. What does this look like?"],
   ask_too_soon: ["Wait — what exactly did you want to tell me?","Hold on — you said one thing. What is it?","You said just one thing — I'm still waiting to hear it.","What was the one thing you wanted to say?"],
+  door_compliance_ask: ["Hold on — who exactly are you? And which company?","Sorry, I didn't catch who you are or where you're calling from.","Wait — you haven't told me who you are or what company you're with.","I don't think you told me your name or company. Who is this?"],
+  misrep_response: ["Wait — is this a sales call? Because it sounds like one.","Hold on. You said it's not a sales call but you're asking to meet about my finances. Which is it?","I'm confused — you said it's not a sales call, but you're a financial representative. What exactly is this?","That doesn't add up. If you're from Great Eastern, this is a sales call. Why say it isn't?"],
+  premature_ask: ["We haven't even spoken yet. What are you proposing?","I don't even know who you are yet. What is this?","Hold on — you haven't told me anything. What exactly are you selling?","I'm confused — we've only just started. What are you asking me?"],
+  phase2_ask_skip: ["What exactly are you proposing? We've barely spoken.","You're asking to meet already? I don't even know what this is about.","Slow down — I don't know enough about this to agree to anything.","What is this actually about? You haven't told me anything yet."],
+  loop_ceiling: ["I'm not sure where this is going. I have to go.","I've been waiting to understand what you're saying. I'm going to go.","This doesn't seem to be going anywhere. I'll hang up now.","I'm not following this. I'm going to have to go.","Ok I'm losing track of this. Goodbye."],
   off_topic_warning: ["I'm not sure why you're asking me that.","That's got nothing to do with why you called.","I don't see how that's relevant.","Why are you asking me that?","That's a strange thing to ask on a cold call.","I'm not sure what that has to do with anything.","Sorry — were you calling about something specific?","I'm not following. What does that have to do with your call?","I'm confused — what are we talking about?","That doesn't seem related to what you were saying."],
   off_topic_exit:   ["I really don't think this call is going anywhere. Goodbye.","I'm going to stop you there. Take care.","This doesn't seem to be going anywhere. Bye.","I think we've lost the thread here. I'm going to go."],
   inappropriate_exit: ["That's completely out of line. I'm hanging up.","I'm not going to continue this conversation. Goodbye.","That's not acceptable. Don't call again.","This call is over."],
@@ -1196,53 +1202,63 @@ async function _geminiDebrief(outcome, engineFlags){
   var flagSummary = [
     "Outcome: " + outcome,
     "Warmth band (COLD/WARM/HOT): " + engineFlags.warmthBand,
+    "Total turns: " + engineFlags.turns,
+    "-- DOOR --",
+    "MAS ID missing (rep did not state name + financial representative + Great Eastern): " + engineFlags.doorComplianceFlag,
     "Early exit ignored (rep skipped PI): " + engineFlags.earlyExitIgnored,
-    "Early exit missed (rep did not acknowledge exit): " + engineFlags.earlyExitMissed,
-    "Pitch detected: " + engineFlags.pitchDetected,
+    "-- HOOK --",
+    "Pitch detected (too product-focused): " + engineFlags.pitchDetected,
     "Lecture/ramble detected: " + engineFlags.lectureDetected,
     "Wrong language count (retirement/dependants etc): " + engineFlags.wrongLangCount,
-    "Total turns: " + engineFlags.turns,
+    "-- EXIT --",
+    "Early exit missed (rep did not acknowledge exit): " + engineFlags.earlyExitMissed,
+    "-- MINI HOOK --",
     "Had Mini Hook (re-earn after Exit): " + engineFlags.hadMiniHook,
     "Skipped Mini Hook (jumped Exit straight to Ask): " + engineFlags.skippedMiniHook,
+    "-- ASK --",
+    "Misrepresentation detected (rep described meeting as survey/free check-up/not a sales call): " + engineFlags.misrepDetected,
     "Close had timebox (said how long): " + engineFlags.closeHadTimebox,
     "Close had two options: " + engineFlags.closeHadTwoOptions,
     "Close had reframe (lowered commitment): " + engineFlags.closeHadReframe,
     "Close named the session (review of situation): " + engineFlags.closeHadSession,
+    "-- OTHER --",
     "Off-topic warning fired: " + engineFlags.offTopicWarningFired,
     "Inappropriate language exit: " + engineFlags.inappropriateExit
   ].join("\n");
 
-  var prompt = "You are a cold calling coach reviewing a practice call. The rep was trying to book a meeting with Ethan, a 24-year-old Singaporean engineer who is sceptical of cold calls.\n\n" +
-    "The rep's ONLY goal: book a short review session — not to explain products, not to convince, just to get a time in the diary.\n\n" +
-    "THE FRAMEWORK — 4 MOMENTS:\n" +
-    "1. THE DOOR: Name, company, one specific benefit for someone like them, ask for 20 seconds. One breath.\n" +
-    "2. THE HOOK: One insight about people in their situation — make them feel seen. Not a product pitch.\n" +
-    "3. THE EXIT (two-part): When Ethan tries to leave — (a) say 'Before you go — just one thing.' Wait for him to ask what it is. (b) Then deliver the Mini Hook — one relevant insight re-earning the right to ask. Only THEN make the Ask.\n" +
-    "4. THE ASK: No commitment framing + name the session ('just a quick review of your current situation') + two specific time options. All in one sentence.\n\n" +
-    "KEY RULE ON EXIT: Jumping from 'just one thing' straight to the Ask is a mistake. The Mini Hook must come first to re-earn the right. If skippedMiniHook is TRUE, flag this as the primary issue.\n\n" +
-    "EXAMPLE STRONG LINES:\n" +
-    "- Door: 'Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. 20 seconds?'\n" +
-    "- Hook: 'Most people earning well at your stage haven\'t checked if their money is keeping up.'\n" +
-    "- Exit: 'Before you go — just one thing.'\n" +
-    "- Mini Hook: 'Most people in your situation haven\'t actually checked if this gap affects them — that\'s usually what makes it worth a look.'\n" +
-    "- Ask: 'Nothing to commit to — just a quick review of your current situation. Tuesday 8pm or Saturday morning?'\n\n" +
+  var prompt = "You are a cold calling coach reviewing a practice call. " +
+    "The rep was trying to book a meeting with Ethan, a 24-year-old Singaporean engineer who is sceptical of cold calls.\n\n" +
+    "The rep's ONLY goal: book a short review session. Not to explain products, not to convince. Just get a time in the diary.\n\n" +
+    "THE FRAMEWORK -- 5 MOMENTS:\n" +
+    "1. THE DOOR: Rep must state (a) their name, (b) that they are a financial representative, (c) that they are from Great Eastern, plus one benefit for someone like Ethan, and ask for 20 seconds. All in one breath. This is a MAS regulatory requirement.\n" +
+    "2. THE HOOK (Path B only): One insight about people in their situation -- make them feel seen. End with one light question. Not a product pitch. Only used when Ethan gives space after the Door.\n" +
+    "3. THE EXIT: When Ethan tries to leave -- say 'Before you go -- just one thing.' Then wait. He asks 'What one thing?' This is Move 1 only.\n" +
+    "4. THE MINI HOOK: After he asks 'What one thing?' -- deliver one relevant, situation-specific insight. NOT the Ask yet. Re-earn the right first. This is Move 2 of the Exit sequence.\n" +
+    "5. THE ASK: No commitment framing + name the session ('just a quick review of your current situation') + timebox + two specific time options. All in one sentence.\n\n" +
+    "KEY RULES:\n" +
+    "- doorComplianceFlag=TRUE means the rep never stated their name + role (financial representative) + company (Great Eastern). This is a MAS conduct requirement. Flag it as a fail in the door verdict.\n" +
+    "- misrepDetected=TRUE means rep described the meeting as a 'survey', 'free check-up', 'free consultation', or said 'this is not a sales call'. This misrepresents a financial advisory consultation and is a MAS conduct risk. Flag it as a fail in the ask verdict.\n" +
+    "- skippedMiniHook=TRUE means rep jumped from Exit straight to Ask without the Mini Hook. Primary error.\n" +
+    "- closeHadSession=FALSE means rep never named what the session was for.\n" +
+    "- closeHadTimebox=FALSE means rep never said how long.\n" +
+    "- closeHadTwoOptions=FALSE means rep gave only one time option.\n" +
+    "- inappropriateExit=TRUE: skip all analysis, flag only this.\n\n" +
+    "PROGRESSIVE DEBRIEF RULE:\n" +
+    "Only include moments the rep ACTUALLY REACHED. If the call ended before the Ask, do not include Ask. " +
+    "Use the transcript and engine flags to determine which moments were reached. " +
+    "A moment is reached if there is evidence in the transcript of an attempt, however flawed.\n\n" +
     "Engine flags:\n" + flagSummary + "\n\n" +
     "Transcript:\n" + history + "\n\n" +
-    "YOUR TASK: Review the transcript using the engine flags as ground truth.\n" +
-    "CRITICAL RULES:\n" +
-    "- If inappropriateExit is TRUE: the call ended due to inappropriate language. Flag ONLY this. Skip all other moment analysis.\n" +
-    "- If skippedMiniHook is TRUE: rep jumped from Exit straight to Ask without re-earning. This is the primary error to flag.\n" +
-    "- If hadMiniHook is FALSE and the call reached the Exit stage: rep skipped the re-earn step.\n" +
-    "- If closeHadSession is FALSE: rep asked for a meeting but never named what the session was for. Flag that.\n" +
-    "- If closeHadTimebox is FALSE: rep did not say how long the meeting takes. Flag specifically.\n" +
-    "- If closeHadTwoOptions is FALSE: rep gave only one time option. Flag specifically.\n" +
-    "- If closeHadReframe is FALSE: rep did not lower the commitment. Flag specifically.\n" +
-    "- If offTopicWarningFired is TRUE: note rep went off-topic during the call.\n" +
-    "- If the rep said their name, company AND asked for time — the opener is CORRECT even if they missed the reason.\n" +
-    "- Only flag a moment as wrong if the rep CLEARLY made an error.\n" +
-    "For each moment card: quote the REP\'S EXACT words (not paraphrased), state the specific error using the flag data, and give ONE concrete alternative line. Maximum 3 moment cards.\n\n" +
-    "Return ONLY this JSON, no markdown, no preamble:\n" +
-    '{"summary":"2 sentences — what happened overall and the single biggest reason for the outcome","moments":[{"turn":"rep exact quote, 12 words max","issue":"one sentence — what specifically went wrong here","better":"one concrete alternative line the rep could say instead"}],"strengths":["one specific observed behaviour done well — reference what they actually said, max 2 items"],"improvements":["one specific, actionable fix with example language — max 2 items"],"next_call_tip":"one sentence — the single highest-leverage change for next time"}';
+    "VERDICT RULES:\n" +
+    "- pass: moment executed correctly\n" +
+    "- warn: attempted but with a gap (e.g. Exit line said but no Mini Hook before Ask)\n" +
+    "- fail: missing, skipped, or done incorrectly\n\n" +
+    "For warn or fail: include a 'better' field with one concrete alternative line.\n" +
+    "For pass: omit the 'better' field entirely.\n\n" +
+    "Return ONLY this JSON (no markdown, no preamble). " +
+    "Only include moment keys that were actually reached. " +
+    "The reached array must list only the moments you are including:\n" +
+    '{"summary":"1-2 sentences max -- what happened and the single biggest reason for the outcome","moments":{"door":{"verdict":"pass|warn|fail","feedback":"one sentence"},"hook":{"verdict":"pass|warn|fail","feedback":"one sentence"},"exit":{"verdict":"pass|warn|fail","feedback":"one sentence"},"mini_hook":{"verdict":"pass|warn|fail","feedback":"one sentence"},"ask":{"verdict":"pass|warn|fail","feedback":"one sentence"}},"reached":["door","hook"],"next_call_tip":"one sentence -- single highest-leverage change for next time"}';
 
   try {
     var resp = await fetch(GEMINI_URL, {
@@ -1250,29 +1266,25 @@ async function _geminiDebrief(outcome, engineFlags){
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 4000, thinkingConfig: { thinkingBudget: 0 } }
+        generationConfig: { temperature: 0.4, maxOutputTokens: 2000, thinkingConfig: { thinkingBudget: 0 } }
       })
     });
     var data = await resp.json();
     if(data.candidates && data.candidates[0] && data.candidates[0].content){
       var raw = data.candidates[0].content.parts[0].text.trim();
       raw = raw.replace(/```json|```/g,"").trim();
-      // Safety: if JSON is truncated, attempt to close it
       try {
         return JSON.parse(raw);
       } catch(e) {
-        // Try to recover truncated JSON by closing open structures
         var fixed = raw;
         if(!fixed.endsWith("}")) {
-          // Count open quotes to detect unterminated string
           var inStr = false, escaped = false;
           for(var i=0;i<fixed.length;i++){
             if(escaped){ escaped=false; continue; }
             if(fixed[i]==="\\") { escaped=true; continue; }
             if(fixed[i]==='"') inStr=!inStr;
           }
-          if(inStr) fixed += '"'; // close open string
-          // Close open arrays and objects
+          if(inStr) fixed += '"';
           var depth = 0, arrDepth = 0;
           for(var j=0;j<fixed.length;j++){
             if(fixed[j]==='{') depth++;
@@ -1302,6 +1314,9 @@ var DBF = {
     lectured:      "The call lost momentum after Ethan raised his age. The response became a longer explanation than he needed. With someone like him, less is more — he doesn't want to be convinced, he wants to feel like the decision makes sense for him right now.",
     wrong_lang:    "The call lost momentum in the middle. Some of the language used didn't quite connect with where Ethan is in his life right now. He's 24 and just started working — what matters to him is quite specific.",
     pitch:         "Ethan ended the call when the conversation shifted toward products or specific solutions. On a cold call, the job is just to book the meeting — not to share what you can offer. Everything else belongs in the meeting itself.",
+    soft_reject:   "Ethan didn't commit to a specific time. The Ask landed but something made it easy for him to deflect — the session wasn't named clearly enough, the timeframe was missing, or the two options weren't specific. A clean Ask removes those escape routes.",
+    door_compliance: "Ethan stopped the call to ask who you were. The Door needs three things stated clearly upfront: your name, that you are a financial representative, and that you are from Great Eastern. When any of these is missing, Ethan has to stop and ask — and once that happens, the call rarely recovers cleanly.",
+    misrep: "Ethan pushed back when you described the meeting in a way that didn't match what he knew about the call. Calling it a 'survey', a 'free check-up', or saying 'this is not a sales call' when you are a financial representative prospecting for advisory clients misrepresents the nature of the session. This is a conduct risk under MAS standards. The correct language is neutral and accurate: 'a quick review of your current situation'.",
     hard_end:      "Ethan ended the call before it got going. A shorter, more direct start often makes a big difference with someone who's impatient."
   },
   tips:{
@@ -1311,7 +1326,10 @@ var DBF = {
     lectured:           "When someone says they're too young, explaining why they're wrong rarely changes their mind. Agreeing with them first — then showing them a different angle — tends to get further.",
     whatsapp:           "The door stayed open but no time was locked in. When someone says 'WhatsApp me', agreeing to it while also suggesting a specific time in the same breath tends to produce a more committed outcome.",
     vague_close:        "The close landed but the time options weren't specific enough to make the decision easy. Two real, concrete options — day and time — give the prospect something definite to agree to.",
+    soft_reject:        "The Ask needs four parts in one sentence: nothing to commit to + name the session + how long + two specific time options. Any one missing gives Ethan an easy exit. Try: \"Nothing to commit to — just a quick review of your current situation. About 20 minutes. Tuesday 8pm or Saturday morning?\"",
     pitch:              "Product details belong in the meeting, not the call. The call's only job is to book the time. Keeping the conversation at the direction level keeps the door open longer.",
+    door_compliance:    "The Door formula needs three things in the first sentence: your name, 'financial representative', and 'Great Eastern'. Try: \"Hi Ethan, [your name] here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is protected. Got 20 seconds?\"",
+    misrep:             "Use neutral, accurate language for the meeting: 'a quick review of your current situation' or 'a 20-minute session to see where things stand'. Never say 'not a sales call', 'survey', or 'free check-up' — these misrepresent a financial advisory consultation and create conduct risk.",
     clean_call:         "Good outcome. One thing to watch next time — when a prospect accepts with a condition, there's often a small opportunity to make the confirmation even cleaner and more committed.",
     hard_end:           "A shorter, more direct opener often works better with someone who's impatient. Under 25 words, clear reason, immediate question — that sequence gives the call the best chance of getting started."
   }
@@ -1319,7 +1337,7 @@ var DBF = {
 
 /* ── FOUNDATION HINTS (Tier 1 — one-line action prompt) ── */
 var HINTS = {
-  s1_weak:    "Ethan needs four things: your name, your company, one reason, and a request for 20 seconds — all in one breath. Try: \"Hi Ethan, [name] from [company]. I help people your age [one thing]. Got 20 seconds?\"",
+  s1_weak:    "Ethan needs three things in your first line: your name, that you are a financial representative, and that you are from Great Eastern. Try: \"Hi Ethan, [name] here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is protected. Got 20 seconds?\"",
   s1_hasId:   "He knows who you are — now give him one reason to stay on. Try: \"Most people your age [one relevant situation]. Got 20 seconds?\"",
   s2_noObs:   "He's listening — share one specific thing about his situation, then ask one light question. Try: \"Most people at your stage [observation]. Is that something you've thought about?\"",
   s2_noQ:     "Good start — now hand it to him with one question. Try: \"Is that something you've looked at?\" or \"Has that crossed your mind?\"",
@@ -1332,18 +1350,23 @@ var HINTS = {
   pi_use:     "He wants to go — don't give your reason yet. Ask for one moment first. Try: \"Before you go — just one thing.\" Then stop.",
   exit_pause: "He's curious — now re-earn it. Give him one insight about people in his situation. Not the Ask yet. Try: \"Most people in your situation haven't actually checked if this gap affects them.\"",
   mini_hook_done: "Good — now ask for the session. Keep it low pressure and give two times. Try: \"Nothing to commit to — just a quick review of your current situation. Tuesday 8pm or Saturday morning?\"",
+  premature_ask: "Too early for a booking — he doesn't know what you're offering yet. Go back to the Hook first: one insight about people in his situation. Try: \"Most people your age haven't checked if their income is actually protected.\"",
+  phase2_ask_skip: "He pushed back — you're on a short fuse now. Don't repeat the Ask. Give him one clean Hook — why this matters for someone exactly like him. One sentence, then a light question.",
   pi_ignored: "He signalled he wanted to go and you kept going. Next time: acknowledge it first. Try: \"I hear you\" — then ask for one moment.",
-  wrong_lang: "That language doesn't connect with a 24-year-old yet. Swap \"retirement\" or \"dependants\" for something closer to where he is — his job, his company insurance, what happens if he switches roles."
+  wrong_lang: "That language doesn't connect with a 24-year-old yet. Swap \"retirement\" or \"dependants\" for something closer to where he is — his job, his company insurance, what happens if he switches roles.",
+  pi_window:  "He gave you space — use it now. One observation, one light question, then ask for the session. All in this turn. Try: \"Most people your age haven't checked if their income is protected. Is that something you've thought about? Nothing to commit to — just a quick review. Tuesday 8pm or Saturday morning?\"",
+  door_compliance: "State your name, that you are a financial representative, and Great Eastern — all in the first sentence. Try: \"Hi Ethan, [name] here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is protected. Got 20 seconds?\"",
+  misrep: "Don't describe the meeting as a survey, free check-up, or 'not a sales call'. Use accurate neutral language: \"Nothing to commit to — just a quick review of your current situation. About 20 minutes.\""
 };
 
 /* ── COACHING CARDS (Tier 2 — full guidance, pulled on demand) ── */
 var COACHING = {
   s1_weak: {
-    stage: "Introducing yourself",
-    principle: "Ethan needs four things before he decides to stay on: your name, your company, one brief reason this might matter to him, and a request for 20 seconds — all in one breath.",
-    example: "\"Hi Ethan, [your name] from [company]. I help people your age make sure their income is actually working for them. Got 20 seconds?\"",
-    why: "He's deciding in the first 10 seconds whether to keep listening. If he can't immediately answer 'who is this and why should I care?' he'll brush you off.",
-    avoid: "Giving a long company intro before asking for time. Asking multiple questions. Mentioning products in your opener."
+    stage: "Opening the call",
+    principle: "The first line needs three things: your name, that you are a financial representative, and that you are from Great Eastern — plus one reason this might matter to Ethan, and a request for 20 seconds. All in one breath.",
+    example: "\"Hi Ethan, [your name] here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is actually protected if something changes. Got 20 seconds?\"",
+    why: "Ethan is deciding in the first 5 seconds whether to stay on. If he can't immediately answer 'who is this and why should I care?' he brushes you off. The three-part identification is also a MAS requirement — not optional.",
+    avoid: "Skipping your role or company. Leading with a product name. Asking multiple questions. Giving a long company introduction before asking for time."
   },
   s1_hasId: {
     stage: "Giving a reason to stay on",
@@ -1382,10 +1405,10 @@ var COACHING = {
   },
   s3_reframe: {
     stage: "Lowering the ask",
-    principle: "Ethan's resistance is about perceived cost — time, obligation, commitment. Make clear the meeting is just a conversation, nothing to commit to, and name what the session is for. Then ask in the same breath.",
+    principle: "Ethan's resistance is about perceived cost — time, obligation, commitment. Remove the cost: nothing to commit to, name what the session is, give two specific times. All in one sentence.",
     example: "\"Nothing to commit to — just a quick review of your current situation. Tuesday 8pm or Saturday morning — which works?\"",
-    why: "Lowering the ask without immediately following with the meeting question loses the moment. The ask belongs in the same sentence.",
-    avoid: "Saying 'it's just a chat' and then pausing. The meeting question must come immediately — don't leave a gap."
+    why: "The three parts work together: 'nothing to commit to' removes fear, naming the session makes it concrete, two options make it easy to say yes. Missing any one of the three weakens the close.",
+    avoid: "Saying 'it's just a chat' without naming the session. Lowering the ask and then pausing before the time options — the Ask must land in one breath. Asking 'when are you free?' instead of giving two options."
   },
   s3_noask: {
     stage: "Asking for the meeting",
@@ -1395,11 +1418,11 @@ var COACHING = {
     avoid: "Asking 'when are you free?' — open questions create friction. You give the times, he picks one."
   },
   s4_timebox: {
-    stage: "Naming the session",
-    principle: "Ethan needs to know what he's agreeing to before he'll commit. Name the session — 'quick review of your situation' — and give two specific times in the same breath.",
-    example: "\"Just a quick review of your current situation — Tuesday 8pm or Saturday morning?\"",
-    why: "Naming the session gives him something concrete to say yes to. 'A quick chat' or 'won't take long' is vague and creates hesitation.",
-    avoid: "Leaving it unnamed. Saying 'won't take long' without saying what it is. Name it and make it sound easy."
+    stage: "Giving a timeframe",
+    principle: "Ethan needs to know how long before he'll say yes. Add a timeframe — 'just 20 minutes' or 'about half an hour' — and give two specific times in the same breath.",
+    example: "\"Just a quick review of your current situation — about 20 minutes. Tuesday 8pm or Saturday morning?\"",
+    why: "Without a timeframe, agreeing feels open-ended. '20 minutes' makes the commitment feel small and specific. The timeframe and time options should land together.",
+    avoid: "Leaving the duration vague. Saying 'won't take long' without naming how long. Giving the timeframe without following immediately with two time options."
   },
   s4_options: {
     stage: "Giving two times to choose from",
@@ -1417,10 +1440,10 @@ var COACHING = {
   },
   pi_window: {
     stage: "He gave you a moment — use it now",
-    principle: "He said ok. Use that moment right now — one reason to care, lower the ask, ask for the meeting. All in this turn. The meeting ask cannot wait for the next turn.",
-    example: "\"Most people your age earning well haven't built any buffer if their income stops. Nothing to commit to — just a quick review of your current situation. Tuesday 8pm or Saturday morning?\"",
-    why: "This is the most valuable moment in the call. If you give a reason but don't ask for the meeting, the moment is gone. The prospect gave you one window, not two.",
-    avoid: "Giving your reason and waiting to see how he responds before asking. Fill the window completely — reason, lower the ask, meeting question — all in one breath."
+    principle: "He stayed on after the Door. That is your signal — he gave you space. Use it right now: one observation about people in his situation, one light question, then the Ask. All in this turn. Don't split it across turns.",
+    example: "\"Most people who just started working haven't checked if their income is protected if they can't work. Is that something you've thought about?\" — then if he responds: \"Nothing to commit to — just a quick review of your current situation. Tuesday 8pm or Saturday morning?\"",
+    why: "He gave you one window, not two. If you share the observation but wait to see his response before asking, you lose the moment. The Ask must follow while he's warm.",
+    avoid: "Sharing your observation and then pausing to see how he reacts before asking. Treating Path B like Path A — he didn't try to leave, so you don't need the Exit. Observation → light question → Ask is the complete sequence."
   },
   exit_pause: {
     stage: "He's waiting — re-earn the right",
@@ -1443,12 +1466,40 @@ var COACHING = {
     why: "Moving past his signal without acknowledging it makes him feel unheard. That's when calls close down for good.",
     avoid: "Continuing as if he didn't say it. One acknowledgement sentence changes everything."
   },
+  phase2_ask_skip: {
+    stage: "Ask too early — Hook not complete",
+    principle: "You asked for the meeting before Ethan had a reason to say yes. In Phase 2 (after the Door), you need a Hook first — one observation about people in his situation, one light question — before the Ask lands.",
+    example: "\"Most people who just started working haven't checked if their income is protected if they can't work. Is that something you've thought about?\" — then Ask.",
+    why: "Ethan gave you space after the Door. That space is for the Hook, not the Ask. The Ask without a Hook has nothing to land on.",
+    avoid: "Going straight from the Door (or a single line) to the meeting Ask. The Hook earns the Ask."
+  },
+  premature_ask: {
+    stage: "Ask before anything was established",
+    principle: "The Ask arrived before Ethan knew who you were or why you were calling. The Door needs to come first — name, financial representative, Great Eastern, one reason, 20 seconds.",
+    example: "\"Hi Ethan, [name] here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is protected. Got 20 seconds?\"",
+    why: "Ethan has no context. An Ask without a Door is a stranger asking for your time with no explanation.",
+    avoid: "Any meeting Ask before completing the Door formula."
+  },
   wrong_lang: {
     stage: "Language didn't connect",
-    principle: "Some of what you said didn't connect with Ethan's life right now. He's 24, just started working. Stay close to what's real for him — his company insurance, his job, what changes if he switches roles.",
-    example: "Instead of \"retirement planning\", try: \"Most people your age assume their company covers them — they don't check what happens when they leave or switch jobs.\"",
-    why: "Language about retirement, dependants, or family protection has no anchor for him yet. It signals you don't understand where he is.",
-    avoid: "Retirement, dependants, death benefits, estate planning — anything that belongs to a different life stage."
+    principle: "Some of what you said belongs to a different life stage. Ethan is 24 and just started working. Stay close to what's real for him right now — his job, his company insurance, what happens if he can't work or switches roles.",
+    example: "Instead of 'retirement planning' or 'protecting your family', try: \"Most people your age assume their company covers them if they can't work — they don't check what actually happens when they leave or switch jobs.\"",
+    why: "Language about retirement, dependants, or family protection has no anchor for a 24-year-old. It signals you don't understand where he actually is — and once he feels that, the call is effectively over.",
+    avoid: "Retirement, pension, dependants, children, spouse, death benefits, estate planning, legacy — anything that belongs to a later life stage. Stick to income, job changes, company insurance, and what changes if something happens at work."
+  },
+  door_compliance: {
+    stage: "Identifying yourself",
+    principle: "Every call must state three things in the first sentence: your name, that you are a financial representative, and that you are from Great Eastern. All three — not two.",
+    example: "\"Hi Ethan, [your name] here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is actually protected. Got 20 seconds?\"",
+    why: "This is a MAS requirement, not a best practice. A prospect who doesn't know who you are or what you represent has no reason to keep listening — and every right to ask. Getting asked mid-call breaks the flow and drops warmth.",
+    avoid: "Saying just your name and company without stating your role. Saying 'I help people with their finances' without naming that you are a financial representative. The role must be explicit."
+  },
+  misrep: {
+    stage: "Describing the meeting accurately",
+    principle: "Name the session as what it is — a review of their current situation. Never use language that disguises or softens its nature: no 'survey', no 'free check-up', no 'this is not a sales call'.",
+    example: "\"Nothing to commit to — just a quick review of your current situation. About 20 minutes. Tuesday 8pm or Saturday morning?\"",
+    why: "Describing a financial advisory consultation as a survey or a non-sales call is misrepresentation under MAS standards. It is also a credibility risk — if Ethan realises the framing doesn't match reality, trust is gone immediately.",
+    avoid: "'Survey', 'free check-up', 'free consultation', 'not a sales call', 'I'm not here to sell anything'. These misrepresent the nature of the session. 'A quick review of your current situation' is accurate and still low-pressure."
   }
 };
 
@@ -1456,7 +1507,7 @@ var COACHING = {
 var TIPS_CONTENT = {
   howto: {
     title: "How it works",
-    body:  "A cold call simulator. Your only goal: book a session with Ethan — a 24-year-old engineer who didn't ask for your call.\n\n──────────────────\nFOUR MOMENTS\n──────────────────\n\n🚪 THE DOOR — every call\nName, company, one reason it might matter to him, ask for 20 seconds. One breath.\n\n🎯 THE HOOK — sometimes\nIf Ethan gives you space after the opener, share one observation and ask one light question. Don't pitch.\n\n✋ THE EXIT — almost every call. Two moves:\nMove 1: \"Before you go — just one thing.\" Then stop. Wait for him to ask what it is.\nMove 2: Give one insight about people in his situation. Re-earn the right — then ask.\n\n📅 THE ASK — every call, sometimes twice\nNo commitment, name the session, two specific times. All in one breath. If he pushes back again — agree, then close with the same two options.\n\n──────────────────\nTHREE WAYS A CALL CAN GO\n──────────────────\n\nHe Exits Fast — most common\nEthan pushes back right after the opener. Door → Exit (two moves) → Ask. Stay calm, re-earn the right, close completely.\n\nHe Gives You Space — sometimes\nEthan doesn't push back. He gives you a moment to speak. Door → Hook → Ask. One observation, one question, then close.\n\nHe Pushes Back Twice — happens\nEthan pushes back even after The Ask. Agree with the deflection, then close again with the same two options.\n\n──────────────────\nEXAMPLE — He Exits Fast\n──────────────────\n\n🚪 \"Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?\"\nEthan: \"Not interested.\"\n\n✋ \"Before you go — just one thing.\"\nEthan: \"What one thing?\"\n\n✋ \"Most people in your situation haven't actually checked if this gap affects them — that's usually what makes it worth a look.\"\nEthan: \"Ok, so what are you proposing?\"\n\n📅 \"Nothing to commit to — just a quick review of your current situation. Tuesday 8pm or Saturday morning?\"\nEthan: \"Tuesday 8pm works.\"\n\nThe one thing to remember: never argue with pushback. Stop him with one line. Re-earn the right. Then ask."
+    body:  "A cold call simulator. Your only goal: book a session with Ethan — a 24-year-old engineer who didn't ask for your call.\n\n──────────────────\nFIVE MOMENTS\n──────────────────\n\n🚪 THE DOOR — every call\nState your name, that you are a financial representative, and that you are from Great Eastern. Add one reason it might matter to him. Ask for 20 seconds. One breath.\n\n🎯 THE HOOK — Path B only\nIf Ethan stays on after the Door without pushing back, share one observation about people in his situation and ask one light question. Don't pitch.\n\n✋ THE EXIT — most calls\nEthan tries to leave after the Door. Two moves:\nMove 1 (The Exit): \"Before you go — just one thing.\" Stop. Wait for him to ask what it is.\nMove 2 (The Mini Hook): Give one insight about people in his situation. Re-earn the right to ask — then ask.\n\n📅 THE ASK — every call, sometimes twice\nNothing to commit to + name the session + timeframe + two specific options. All in one breath.\nIf he pushes back again — acknowledge, then close with the same two options.\n\n──────────────────\nTWO PATHS\n──────────────────\n\nPath A — He Exits Fast (most calls)\nEthan pushes back right after the Door. Door → Exit → Mini Hook → Ask.\n\nPath B — He Gives You Space (some calls)\nEthan stays on after the Door. Door → Hook → Ask. No Exit needed.\n\nPath C — He Pushes Back on the Ask\nAcknowledge the deflection, then close again with the same two time options.\n\n──────────────────\nEXAMPLE — Path A\n──────────────────\n\n🚪 \"Hi Ethan, [name] here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is actually protected. Got 20 seconds?\"\nEthan: \"Not interested.\"\n\n✋ \"Before you go — just one thing.\"\nEthan: \"What one thing?\"\n\n✋ \"Most people your age haven't checked if their company insurance covers them if they can't work — it usually doesn't once you leave. That's usually why it's worth a look.\"\nEthan: \"Ok, so what are you proposing?\"\n\n📅 \"Nothing to commit to — just a quick review of your current situation. About 20 minutes. Tuesday 8pm or Saturday morning?\"\nEthan: \"Tuesday 8pm works.\"\n\nThe one thing to remember: never argue with pushback. Stop him with one line. Re-earn the right. Then ask."
   },
   modes: {
     title: "Practice modes",
@@ -1679,13 +1730,19 @@ function _extractIntents(raw){
   var t  = _clean(raw);
   var wc = raw.trim().split(/\s+/).length;
 
-  var hasPitch = _any(t,["whole life","term life","critical illness","ci plan","ci policy","endowment","ilp","investment-linked","unit trust","hospitalisation plan","shield plan","medishield","prushield","avivashield","great eastern shield","income shield","axa shield","sum assured","coverage amount","death benefit","tpd benefit","your premium payment","annual premium","monthly premium","quarterly premium","premium amount","policy number","policy anniversary","policy lapse","underwriting","exclusion clause","beneficiary","nomination","nominee","surrender value","cash value","projected value","rider","add-on rider","hospital rider","ci rider","term plan","term insurance","whole life insurance","protection gap","coverage gap","underinsured","mortality rate","morbidity","actuarial","compare plans","compare policies","compare products","product comparison","proposal","product brochure","buy a plan","purchase a plan","take up a plan","sign up for","sign up today","limited time","promotion ends"]);
+  var hasPitch = _any(t,["whole life","term life","critical illness","ci plan","ci policy","endowment","ilp","investment-linked","unit trust","hospitalisation plan","shield plan","medishield","prushield","avivashield","great eastern shield","ge shield","income shield","axa shield","sum assured","coverage amount","death benefit","tpd benefit","your premium payment","annual premium","monthly premium","quarterly premium","premium amount","low premium","affordable premium","policy number","policy anniversary","policy lapse","underwriting","exclusion clause","beneficiary","nomination","nominee","surrender value","cash value","projected value","rider","add-on rider","hospital rider","ci rider","term plan","term insurance","whole life insurance","protection gap","coverage gap","underinsured","mortality rate","morbidity","actuarial","compare plans","compare policies","compare products","product comparison","proposal","product brochure","buy a plan","purchase a plan","take up a plan","sign up for","sign up today","limited time","promotion ends","insurance plan","insurance product","financial plan","financial product","our plan","our product","our policy","let me show you","let me explain our","i have a plan","i have a product","i have something","great product","good product","best plan","suitable plan","right plan","right product","this plan","this policy","this product","this solution"]);
   var hasFear = _any(t,["what if you die","if something happens to you","when you pass","critical illness can wipe","you could get sick","suddenly fall sick","sudden death","unexpected death","die without","left behind","your family will suffer","your loved ones suffer","burden on your family","outlive your savings","run out of money","go bankrupt","financial ruin","financial disaster","can you afford","afford treatment","cancer costs","heart attack costs","stroke costs","scare you","terrifying","scary reality","wake up call","don't wait until it's too late","too late when","by then it's too late"]);
   var tooPersonal = _any(t,["how much do you earn","what is your salary","your monthly income","your annual income","income bracket","your take-home","how much savings","how much in your bank","your net worth","any outstanding loans","any debts","credit card debt","your cpf balance","cpf ordinary","cpf special","cpf medisave","existing policies","current policies","what policies do you have","your health condition","medical history","any pre-existing","smoker or non","are you a smoker","how many dependants","any children","are you married","what savings","what policies","what coverage do you","existing coverage"]);
   var isRamble  = wc > 55;
   var hasMultiQ = (raw.match(/\?/g)||[]).length >= 2;
 
-  var hasIdentity = _any(t,["i am","i'm","my name is","this is","speaking is","calling is","from great eastern","from ge","from aia","from prudential","from income","from singlife","from aviva","from manulife","from tokio marine","from great eastern life","from great eastern financial","financial adviser","financial advisor","fa ","licensed fa","wealth manager","financial planner","financial consultant","my name"]);
+  var hasName    = _any(t,["i am","i'm","my name is","this is","speaking is","calling is","my name","alvin here","alvin speaking","alvin from","here from","speaking from"]);
+  var hasCompany = _any(t,["from great eastern","from ge","great eastern life","great eastern financial","from aia","from prudential","from income","from singlife","from aviva","from manulife","from tokio marine"]);
+  var hasRole    = _any(t,["financial adviser","financial advisor","financial representative","financial rep","financial consultant","financial planner","fa ","licensed fa","licensed representative","appointed representative","wealth manager","wealth planner","insurance adviser","insurance advisor","insurance representative","insurance consultant"]);
+  // hasMASId: full MAS-compliant identification — name + company + role all present in the call so far
+  var hasMASId   = hasName && hasCompany && hasRole;
+  // hasIdentity: backward-compat flag used throughout engine (name + at least company or role)
+  var hasIdentity = hasName && (hasCompany || hasRole);
   var hasMicroReason = _any(t,["financial plan","financial planning","financial direction","financial goals","financial health","financial picture","financial review","financial check","financial overview","financial wellness","financial readiness","financial freedom","life goals","life planning","life direction","wealth planning","wealth management","wealth building","wealth check","working toward","track for","on track","right direction","headed in the right","pointing in the right","aligned with","help working professional","help young","help people your age","help fresh grads","help engineers","help people who just started","just started working","early career","starting out","company insurance","group insurance","what your company covers","company benefits","group benefits","employer insurance","making your money work","money working for you","money work for","know where you stand","where you actually stand","your current position","options at 30","options at 35","options later","options in the future","sitting there doing nothing","actually working for you","working toward what you want",
     /* ── A: Income & cash flow ── */
     "paycheck to paycheck","pay cheque to pay cheque","month to month","spending keeps up with","lifestyle inflation","lifestyle creep","every time you get a raise","salary goes up but savings","earning but nothing to show","nothing left at end of month","nothing left at the end","cash flow","income protection","protect your income","income gap","income continuity",
@@ -1729,8 +1786,12 @@ function _extractIntents(raw){
   var hasLightQ = !tooPersonal&&!hasMultiQ&&!hasPitch&&(lqp.some(function(p){return t.indexOf(p)>=0;})||(lqt.some(function(p){return t.indexOf(p)>=0;})&&hasQMark));
   var hasAck = _any(t,["i understand","i get it","i get that","got it","i see","fair enough","that is fair","thats fair","makes sense","that makes sense","understandable","totally understandable","noted","of course","no worries","not a problem","not at all","absolutely","totally","totally fair","totally get","totally understand","completely understand","i hear you","i hear that","i appreciate","appreciate that","i respect","respect that","most people feel","a lot of people","many people feel","you're not alone","youre not alone","not alone","that's common","thats common","very common","right right","i see i see","sure","for sure","definitely","valid","reasonable","you are right","youre right","that is right","exactly","ya fair","ya fair lah","yah fair","yah lah","yah i know","yah makes sense","ok ok i understand","ok ok i get","aiya i know","aiya i understand","good to know","good to hear","fair lah","fair enough lah","yah totally","totally lah","yah totally fair","yeah that's fair","yeah thats fair","that's really fair","that's completely fair","people your age feel the same","most people feel the same","a lot of people feel that way"]);
   var hasClarify = !tooPersonal&&!hasMultiQ&&hasQMark&&_any(t,["just to understand","just so i know","just to check","just to clarify","just want to understand","help me understand","can i ask","may i ask","can i just check","is it mainly","is it more","is it the timing","is it that you","is it because","is it mostly","is it primarily","making you hesitate","holding you back","your main concern","not sure it's relevant","not sure whats involved","worried about","what is it that","what's making you","whats making you","what's stopping you","whats stopping you"]);
-  var hasTbRx = /\b\d{1,2}\s*(?:min(?:ute)?s?|mins?|seconds?|secs?)\b/i.test(raw);
-  var hasReframe = _any(t,["not about changing","isn't about changing","nothing to change","no commitment","no obligation","nothing to commit","nothing to decide","no need to decide","nothing to sign","nothing to buy","no need to buy","just a review","just a check","just to see","just to make sure","just to ensure","just to confirm","just clarity","just making sure","just want to check","purely to check","purely a check","just to give you","just to see if","just to find out","not selling","not here to sell","no selling","not a sales call","isn't a sales call","not looking to sell","not trying to sell","not pitching","no pitch","no hard sell","no pressure","zero pressure","not pushing","nothing to push","won't take long","wont take long","will not take long","very quick","very brief","quick one","short one","you decide","up to you","your call","no need to commit","15 minutes only","20 minutes only","15 mins only","20 mins only","15 minutes max","20 minutes max","15-minute","20-minute","nothing to buy lah","no need buy","just see only","check only","confirm only","just confirm","specific to your situation","hard to put in a message","informational","just information","just to let you know","know where you stand","just to know","make sure you have a clear","clarity on where","see how first","see first","see only","no need decide","no need to decide now","decide later","no rush to decide","have a look first","look first then decide","just to explore","just exploring","just to find out more","find out more first","whatsapp me the details","send you the details"])||hasTbRx;
+  var hasTbRx = /\b\d{1,2}\s*(?:min(?:ute)?s?|mins?)\b/i.test(raw);
+  var hasReframe = _any(t,["not about changing","isn't about changing","nothing to change","no commitment","no obligation","nothing to commit","nothing to decide","no need to decide","nothing to sign","nothing to buy","no need to buy","just a review","just a check","just to see","just to make sure","just to ensure","just to confirm","just clarity","just making sure","just want to check","purely to check","purely a check","just to give you","just to see if","just to find out","no hard sell","no pressure","zero pressure","not pushing","nothing to push","won't take long","wont take long","will not take long","very quick","very brief","quick one","short one","you decide","up to you","your call","no need to commit","15 minutes only","20 minutes only","15 mins only","20 mins only","15 minutes max","20 minutes max","15-minute","20-minute","nothing to buy lah","no need buy","just see only","check only","confirm only","just confirm","specific to your situation","hard to put in a message","informational","just information","just to let you know","know where you stand","just to know","make sure you have a clear","clarity on where","see how first","see first","see only","no need decide","no need to decide now","decide later","no rush to decide","have a look first","look first then decide","just to explore","just exploring","just to find out more","find out more first","whatsapp me the details","send you the details"])||hasTbRx;
+  // hasMisrep: rep describes the meeting in a way that misrepresents it as non-advisory
+  // "not a sales call" / "not selling" disguise the nature of a financial advisory prospecting call
+  // "survey" / "free check-up" / "market research" falsely characterise the session type
+  var hasMisrep = _any(t,["not a sales call","isn't a sales call","this is not a sales","this isn't a sales","not selling","not here to sell","no selling","not selling anything","no selling involved","just a survey","quick survey","doing a survey","market research","just research","doing research","free check-up","free checkup","free check up","complimentary check","complimentary session","free session","no charge","at no cost to you","no cost to you","free of charge","free consultation","free financial"]);
   var hasDismiss = _any(t,["i know i know","just listen","you need to listen","just let me","stop interrupting","you are not listening","you need to hear","i am telling you","trust me","just trust me","you should listen"]);
   var hasReschedule = _any(t,["better time","good time to call","when should i call","call you back","reach you","another time to call","whatsapp","whats app","text you","email you","send you","call you later"]);
   var hasTimebox = hasTbRx||_any(t,["10 min","15 min","20 min","30 min","10 mins","15 mins","20 mins","30 mins","10 minute","15 minute","20 minute","30 minute","10 minutes","15 minutes","20 minutes","30 minutes","half an hour","short meeting","quick meeting","short chat","quick chat","short call","quick call","short zoom","quick zoom","quick 15","quick 20","15 only","20 only","very quick","very brief","won't take long","wont take long","will not take long","very short","short lah","quick review","quick look","quick check","quick catch","quick session","just a review","just a look","just a check","just a session"]);
@@ -1742,8 +1803,36 @@ function _extractIntents(raw){
   var hasTwoOpts = hasOr&&ac>=2;
   var hasMeet = _any(t,["meet","meetup","appointment","appt","zoom","teams","catch up","catchup","session","sit down","coffee","kopi","lunch","tea","call","chat","discussion","talk","conversation","consult","consultation","face to face","in person","come by","pop by","drop by","video call","google meet","when are you free","when are you available","what time suits","what time works","free this","are you free"])||(hasTimebox&&(hasOr||ac>=1))||(hasTwoOpts&&ac>=2)||(ac>=1&&hasLightQ);
 
-  /* Mini Hook — re-earn after Exit. Same insight pattern as Hook but used in EXIT_PAUSE state */
-  var hasMiniHook = _any(t,["most people in your situation","most people like you","most people at your stage","most people your age haven","people like you haven","people in your position","people in your situation","haven't checked","haven't looked","haven't actually","haven't set up","haven't thought about","haven't considered","don't realise","don't actually know","most don't know","many don't realise","that's usually why","that's why i'm calling","that's exactly why","worth a look","worth checking","worth knowing","worth a quick look","before it becomes","while you still can","just to be sure","this is the kind of thing","find out too late","your situation","your stage","where you are now","at your age","earning well","just starting out","building up","coverage gap","income stops","buffer","financial gap","protection gap"]);
+  /* Mini Hook — re-earn after Exit. Requires BOTH a people-pattern AND a gap phrase.
+     This prevents false positives from the Ask ("your current situation", "quick review"). */
+  var mhCompA = _any(t,[
+    // People pattern — Component A
+    "most people in your situation","most people like you","most people at your stage",
+    "most people your age","most people at your age",
+    "people in your position","people in your situation",
+    "people like you","people at your stage","a lot of people your age","guys your age",
+    "someone in your position","someone like you","someone at your stage"
+  ]);
+  var mhCompB = _any(t,[
+    // Gap phrase — Component B (what they haven't done / don't know)
+    "haven't checked","haven't looked","haven't actually","haven't set up",
+    "haven't thought about","haven't considered","haven't realised","haven't reviewed",
+    "don't realise","don't actually know","wouldn't know","wouldn't even know",
+    "find out too late","only find out when","this is the kind of thing",
+    "that's usually why","worth a look","worth checking","worth knowing",
+    "before it becomes","while you still can",
+    // Ethan-specific gaps (young working adult, Singapore context)
+    "spending everything","nothing set aside","no buffer","no emergency fund","without a buffer",
+    "three months expenses","income stops","if you can't work",
+    "between jobs","between companies","when you switch jobs","when you leave",
+    "company insurance","group insurance","only covered while","lapses when you leave",
+    "doesn't follow you","what your company covers","what it actually covers",
+    "saving for bto","bto ballot","down payment","how cpf works",
+    "earlier you start","costs more to start later","by the time you're 30",
+    "by the time you're 35","compounding","protection gap","coverage gap","underinsured",
+    "not enough to cover","only 26 percent"
+  ]);
+  var hasMiniHook = mhCompA && mhCompB;
 
   /* Session framing — did Ask name what the session is */
   var closeHadSession = _any(t,["review of your current situation","review of your situation","quick review","review where things stand","look at your situation","look at your current","check your current","check your situation","review what you have","review what you currently","see where your situation","your current setup","current situation","current coverage","current position","where things stand"]);
@@ -1760,7 +1849,8 @@ function _extractIntents(raw){
   var hasWrongLang = _any(t,["protect your family","protect your loved ones","your dependants","dependants","your children","your kids","your spouse","your wife","your husband","leave behind","legacy","estate planning","will planning","make a will","retirement fund","retire at 65","retirement savings","pension","critical illness","ci coverage","hospitalisation","hospital plan","medisave","medishield","careshield","eldershield","your parents","protect your parents","parent's medical"]);
 
   return { wordCount:wc, flags:{
-    hasIdentity:hasIdentity, hasMicroReason:hasMicroReason, hasPermission:hasPermission,
+    hasIdentity:hasIdentity, hasMASId:hasMASId, hasName:hasName, hasCompany:hasCompany, hasRole:hasRole,
+    hasMicroReason:hasMicroReason, hasPermission:hasPermission, hasMisrep:hasMisrep,
     hasReason:hasReason, hasLightQ:hasLightQ, hasAck:hasAck, hasClarify:hasClarify,
     hasReframe:hasReframe, hasTimebox:hasTimebox, hasTwoOptions:hasTwoOpts, hasMeet:hasMeet,
     hasMiniHook:hasMiniHook, closeHadSession:closeHadSession,
@@ -1948,11 +2038,16 @@ function _initSession(){
     objStep:"ack", objCycles:0, maxObjCycles: Math.random()<.65?1:2,
     waitingForObj:false,
     earlyExitFired:false, piHandled:false, earlyExitMissed:false, earlyExitIgnored:false,
+    doorComplianceFlag:false, misrepDetected:false,
     wrongLangCount:0, lectureDetected:false, pitchDetected:false, fearDetected:false,
     abuseCount:0, nonsenseStreak:0,
     miniHookFired:false, skippedMiniHook:false, closeHadSession:false,
     offTopicWarningFired:false, offTopicStreak:0, inappropriateExitFired:false,
     warmthBand:"COLD",
+    // ── Per-state turn ceilings ───────────────────────────────
+    exitPauseTurns:0, miniHookDoneTurns:0, earlyExitTurns:0, phase2Turns:0,
+    // ── Out-of-sequence flags ─────────────────────────────────
+    prematureClose:false, phase2AskSkip:false, shortFuse:false,
     warmth:ws, bt:bt, turn:1, maxTurns:14,
     p4FollowUps:0,
     status:"active", endReason:null,
@@ -1961,7 +2056,11 @@ function _initSession(){
     // ── Memory layer ──────────────────────────────────────────
     // Facts established by the rep and acknowledged (not rejected) by Ethan
     established: {
-      identity:   false,  // rep gave name/company
+      identity:   false,  // rep gave name + company or role
+      masId:      false,  // rep gave name + company + role (full MAS-compliant)
+      name:       false,  // rep stated their name
+      company:    false,  // rep stated Great Eastern
+      role:       false,  // rep stated their role (financial representative etc.)
       reason:     false,  // rep gave a hook/reason
       permission: false   // rep asked for time and Ethan didn't hard-reject
     },
@@ -1984,6 +2083,11 @@ function _markEstablished(f, reply){
                     POOLS.s1_weak.some(function(r){ return r===reply; });
   if(isRejecting) return;
   if(f.hasIdentity)                     _S.established.identity   = true;
+  if(f.hasName)                         _S.established.name       = true;
+  if(f.hasCompany)                      _S.established.company    = true;
+  if(f.hasRole)                         _S.established.role       = true;
+  if(f.hasMASId || (_S.established.name && _S.established.company && _S.established.role))
+                                        _S.established.masId      = true;
   if(f.hasReason||f.hasMicroReason)    _S.established.reason     = true;
   if(f.hasPermission)                   _S.established.permission = true;
 }
@@ -2105,9 +2209,9 @@ function _doTurn(raw){
     if(!ended&&ph>=2&&_S.nonsenseStreak>=3){
       // Three consecutive turns with zero recognisable intent — confused hang-up
       reply=_pick(["I'm not sure what you're trying to say. I'll have to go.","I'm not following this. I'm going to hang up now.","I really can't make sense of this conversation. Bye."]); _S.status="ended"; _S.endReason="hardReject"; ended=true;
-    } else if(_isGiveUp(text)&&ph>=2&&!ended&&_S.endReason!=="accept"&&_S.endReason!=="delay"&&!_S.closeAttempted){
-      // Rep says goodbye/gives up — Ethan is confused then line goes dead
-      reply=_pick(["Hello? You still there?","Ok... bye then.","Uh... ok. Bye."]);
+    } else if(_isGiveUp(text)&&ph>=1&&!ended&&_S.endReason!=="accept"&&_S.endReason!=="delay"){
+      // Rep says goodbye/gives up at any point
+      reply=_pick(["Hello? You still there?","Ok... bye then.","Uh... ok. Bye.","Ok, take care."]);
       _S.status="ended"; _S.endReason="repGaveUp"; ended=true;
     } else if(f.tooPersonal){
       _S.warmth=0; reply=_pick(["That's too personal for a cold call.","I'm not comfortable sharing that. Goodbye.","Please don't ask that kind of question."]);
@@ -2120,17 +2224,46 @@ function _doTurn(raw){
   }
 
   if(!ended){
+    // Option C — Misrepresentation detection (fires in any phase)
+    // Rep describes the meeting as non-advisory (survey, free check-up, "not a sales call" etc.)
+    if(f.hasMisrep && !_S.misrepDetected){
+      _S.misrepDetected=true;
+      _S.warmth=Math.max(0,_S.warmth-15);
+      reply=_pick(POOLS.misrep_response);
+      hint="Careful — describing the meeting as a 'survey', 'free check-up', or 'not a sales call' misrepresents a financial advisory consultation. Use neutral language: 'a quick review of your current situation' is accurate and sufficient.";
+      hintKey="misrep"; ended=true; _S.status="ended"; _S.endReason="hardReject";
+    }
+
     /* PHASE 1 */
-    if(ph===1){
+    if(ph===1 && !ended){
       // If identity was established in a previous turn, treat this turn as having identity
       var hasId = f.hasIdentity || _S.established.identity;
       var hasRe = f.hasReason || f.hasMicroReason || f.hasPermission || _S.established.reason || _S.established.permission;
 
-      if(f.hasPitch||f.hasFear){
+      // Out-of-sequence: Door → Ask (rep tries to book before establishing anything)
+      // Out-of-sequence: Door → Ask (rep tries to book before establishing the call)
+      if(!ended && f.hasMeet && _S.phase===1 && !_S.prematureClose){
+        _S.prematureClose=true;
+        if(!_S.established.masId) _S.doorComplianceFlag=true;
+        _S.warmth=Math.max(0,_S.warmth-15);
+        reply=_S.doorComplianceFlag ? _pick(POOLS.door_compliance_ask) : _pickNo(POOLS.premature_ask,_S.lastReply);
+        hint=HINTS.premature_ask; hintKey=_S.doorComplianceFlag?"door_compliance":"premature_ask";
+      // Out-of-sequence: Door → Ask second attempt — end call
+      } else if(!ended && f.hasMeet && _S.phase===1 && _S.prematureClose){
+        reply=_pickNo(POOLS.hard_reject,_S.lastReply);
+        _S.status="ended"; _S.endReason="hardReject"; ended=true;
+      // Out-of-sequence: Door → Exit line (rep uses PI before earning it)
+      } else if(!ended && f.hasPatternInterrupt && !_S.established.identity){
+        // Treat as a non-PI turn — strip credit, handle as weak opener
+        reply=_pickMemory(POOLS.s1_weak,_S.lastReply);
+        hint=HINTS.s1_weak; hintKey="s1_weak";
+      } else if(f.hasPitch||f.hasFear){
         reply=_pickNo(POOLS.s1_bad,_S.lastReply);
         if(_S.warmth<=10){_S.status="ended";_S.endReason="hardReject";ended=true;}
       } else if(hasId && hasRe){
         // Full opener — advance to Phase 2
+        // Flag if rep advanced without ever establishing full MAS identification
+        if(!f.hasMASId && !_S.established.masId) _S.doorComplianceFlag=true;
         _S.phase=2; _S.lastBkt=null;
         // 70% of the time Ethan exits immediately — realistic cold call behaviour
         if(!_S.earlyExitFired && Math.random() < 0.70){
@@ -2143,8 +2276,13 @@ function _doTurn(raw){
           hint=HINTS.s2_noObs; hintKey="s2_noObs";
         }
       } else if(hasId){
-        // Has identity but needs reason/permission — use non-identity-asking replies
-        reply=_pickMemory(POOLS.p2_entry,_S.lastReply);
+        // Has name + company but missing role declaration — surface the gap
+        var hasMASIdNow = f.hasMASId || _S.established.masId;
+        if(!hasMASIdNow){
+          reply=_pickMemory(POOLS.s1_no_role,_S.lastReply);
+        } else {
+          reply=_pickMemory(POOLS.p2_entry,_S.lastReply);
+        }
         hint=HINTS.s1_hasId; hintKey="s1_hasId";
       } else {
         // No identity yet
@@ -2155,39 +2293,49 @@ function _doTurn(raw){
 
     /* PHASE 2 */
     } else if(ph===2){
-      if(f.hasPitch||f.hasFear){
+      _S.phase2Turns++;
+      // Out-of-sequence: Hook → Ask (skip Exit + Mini Hook) — short fuse
+      // Only fires if we're genuinely in phase 2 flow (not already in EARLY_EXIT state)
+      if(!ended && f.hasMeet && _S.state!=="EARLY_EXIT" && !_S.shortFuse){
+        _S.prematureClose=true; _S.phase2AskSkip=true; _S.shortFuse=true;
+        _S.warmth=Math.max(0,_S.warmth-12);
+        reply=_pickNo(POOLS.phase2_ask_skip,_S.lastReply);
+        hint=HINTS.phase2_ask_skip; hintKey="phase2_ask_skip";
+      } else if(!ended && f.hasMeet && _S.shortFuse){
+        // Second Ask attempt on short fuse — Ethan exits
+        reply=_pickNo(POOLS.hard_reject,_S.lastReply);
+        _S.status="ended"; _S.endReason="hardReject"; ended=true;
+      } else if(!ended && _S.phase2Turns>=6){
+        // Phase 2 ceiling — rep looping without advancing
+        reply=_pickNo(POOLS.loop_ceiling,_S.lastReply);
+        _S.status="ended"; _S.endReason="hardReject"; ended=true;
+      } else if(!ended && (f.hasPitch||f.hasFear)){
         reply=_pickNo(POOLS.s2_bad,_S.lastReply);
         hint=HINTS.s2_pitch; hintKey="s2_pitch";
         if(_S.warmth<=10){_S.status="ended";_S.endReason="hardReject";ended=true;}
-      } else {
+      } else if(!ended){
         // Carry forward established facts from prior turns
         if(f.hasReason||f.hasMicroReason||_S.established.reason) _S.reasonSeen=true;
         if(f.hasLightQ) _S.questionSeen=true;
 
         if(_S.reasonSeen&&_S.questionSeen){
           _S.phase=3; _S.waitingForObj=true; _S.lastBkt=null;
-          var hooked=f.hasCompanyHook||f.hasHeadstartFrame||f.hasIndependenceFrame||f.hasOptionsFrame;
-          reply=hooked&&_S.warmth>=28?_pickNo(POOLS.s2_hooked,_S.lastReply):_pickNo(POOLS.obj_inject,_S.lastReply);
-          _S.state="ACK"; _S.objStep="ack";
-          // Ethan is about to push back — prime rep for the pattern interrupt
-          hint=HINTS.pi_use; hintKey="pi_use";
+          // Path B clean hook: rep gave insight + light question → Ethan open → go to REFRAME
+          _S.state="REFRAME"; _S.objStep="reframe";
+          reply=_pickMemory(POOLS.s3_needsRfm,_S.lastReply);
+          hint=HINTS.s3_reframe; hintKey="s3_reframe";
         } else if(!_S.reasonSeen&&!f.hasReason&&!f.hasMicroReason){
-          // Rep hasn't given a hook at all — nudge
           reply=_pickMemory(POOLS.s2_noObs,_S.lastReply);
-          // If Ethan's reply was identity-asking, coaching card should address that first
           if(_S.askedAbout.whoIsThis){
             hint=HINTS.s1_hasId; hintKey="s1_hasId";
           } else {
             hint=HINTS.s2_noObs; hintKey="s2_noObs";
           }
         } else {
-          // Rep gave a hook but Ethan exited anyway — nudge toward pattern interrupt
-          // Don't show the hook tip again — they already used one
           reply=_pickMemory(POOLS.s2_noQ,_S.lastReply); hint=HINTS.pi_use; hintKey="pi_use";
         }
-        if(!ended&&!_S.earlyExitFired){
+        if(!ended&&!_S.earlyExitFired&&_S.phase===2){
           _S.earlyExitFired=true; _S.phase=3; _S.waitingForObj=true;
-          // If rep already used PI in same turn, open EXIT_PAUSE (Ethan asks "what one thing?")
           if(f.hasPatternInterrupt||f.hasAck){
             _S.state="EXIT_PAUSE";
             reply=_pickMemory(POOLS.exit_pause,_S.lastReply);
@@ -2205,7 +2353,12 @@ function _doTurn(raw){
     /* PHASE 3 */
     } else if(ph===3&&_S.waitingForObj){
       if(st==="EARLY_EXIT"){
-        if(f.hasPatternInterrupt||f.hasReschedule){
+        _S.earlyExitTurns++;
+        // Ceiling: rep stuck in EARLY_EXIT too long
+        if(_S.earlyExitTurns>=3){
+          reply=_pickNo(POOLS.loop_ceiling,_S.lastReply);
+          _S.status="ended"; _S.endReason="hardReject"; ended=true;
+        } else if(f.hasPatternInterrupt||f.hasReschedule){
           _S.piHandled=true; _S.state="EXIT_PAUSE";
           if(f.hasReschedule&&!f.hasPatternInterrupt) _S.warmth=Math.max(0,_S.warmth-8);
           reply=_pickMemory(POOLS.exit_pause,_S.lastReply);
@@ -2228,13 +2381,19 @@ function _doTurn(raw){
         }
 
       } else if(st==="EXIT_PAUSE"){
+        _S.exitPauseTurns++;
+        // Ceiling: rep stuck in EXIT_PAUSE too long
+        if(_S.exitPauseTurns>=4){
+          reply=_pickNo(POOLS.loop_ceiling,_S.lastReply);
+          _S.status="ended"; _S.endReason="hardReject"; ended=true;
         // Rep must deliver Mini Hook here — NOT the Ask yet
-        if(f.hasMiniHook||(f.hasReason&&!f.hasMeet)){
+        } else if(f.hasMiniHook||(f.hasReason&&!f.hasMeet)){
           _S.miniHookFired=true; _S.state="MINI_HOOK_DONE";
+          _S.exitPauseTurns=0;
           reply=_pickMemory(POOLS.mini_hook_done,_S.lastReply);
           hint=HINTS.mini_hook_done; hintKey="mini_hook_done";
         } else if(f.hasMeet){
-          // Jumped straight to Ask — redirect back
+          // Jumped straight to Ask — specific redirect
           _S.skippedMiniHook=true;
           reply=_pickMemory(POOLS.ask_too_soon,_S.lastReply);
           hint=HINTS.exit_pause; hintKey="exit_pause";
@@ -2248,23 +2407,46 @@ function _doTurn(raw){
         }
 
       } else if(st==="MINI_HOOK_DONE"){
-        // Rep should now deliver the Ask
-        if((f.hasMeet||f.hasReframe)&&f.hasTimebox&&f.hasTwoOptions&&!f.hasFear&&!f.hasWrongLang){
+        _S.miniHookDoneTurns++;
+        // Ceiling: rep looping without making the Ask
+        if(_S.miniHookDoneTurns>=4){
+          reply=_pickNo(POOLS.loop_ceiling,_S.lastReply);
+          _S.status="ended"; _S.endReason="hardReject"; ended=true;
+        // Option B gate: Ask arrived but rep never gave name + company + role
+        } else if((f.hasMeet||f.hasReframe) && !_S.established.masId){
+          _S.doorComplianceFlag=true;
+          _S.warmth=Math.max(0,_S.warmth-10);
+          var _missingPart = !_S.established.name ? "name" : !_S.established.company ? "company" : "role";
+          reply=_pick(POOLS.door_compliance_ask);
+          hint="Before you Ask — Ethan doesn't know who you are yet. State your name, company (Great Eastern), and that you're a financial representative — all in one line.";
+          hintKey="door_compliance";
+        // Full Ask — terminal, resolve call
+        } else if((f.hasMeet||f.hasReframe)&&f.hasTimebox&&f.hasTwoOptions&&!f.hasFear&&!f.hasWrongLang){
           _S.phase=4; _S.state="";
           _S.closeHadTimebox=f.hasTimebox||false; _S.closeHadTwoOptions=f.hasTwoOptions||false;
           _S.closeHadReframe=f.hasReframe||false; _S.closeAttempted=true;
           if(f.closeHadSession) _S.closeHadSession=true;
           var mhoc=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=mhoc; ended=true;
           reply=mhoc==="accept"?_pickNo(POOLS.s4_accept,_S.lastReply):mhoc==="delay"?_pickNo(POOLS.s4_condition,_S.lastReply):_pickNo(POOLS.s4_delay,_S.lastReply);
+        // Partial Ask — advance phase but nudge on missing element
         } else if((f.hasMeet||f.hasReframe)&&(f.hasTimebox||f.hasTwoOptions)){
           _S.phase=4; _S.state="";
+          _S.closeAttempted=true;
           reply=f.hasTimebox?_pickMemory(POOLS.s4_noOptions,_S.lastReply):_pickMemory(POOLS.s4_noTimebox,_S.lastReply);
           hint=f.hasTimebox?HINTS.s4_options:HINTS.s4_timebox; hintKey=f.hasTimebox?"s4_options":"s4_timebox";
+        // Ask with no timebox
         } else if(f.hasMeet){
+          _S.closeAttempted=true;
           reply=_pickMemory(POOLS.s4_noTimebox,_S.lastReply); hint=HINTS.s4_timebox; hintKey="s4_timebox";
+        // Repeated Mini Hook — nudge toward Ask, count the turn
         } else if(f.hasMiniHook){
-          // Repeated Mini Hook — nudge to Ask
-          reply=_pickMemory(POOLS.mini_hook_done,_S.lastReply); hint=HINTS.mini_hook_done; hintKey="mini_hook_done";
+          if(_S.miniHookDoneTurns>=2){
+            reply=_pick(["So what are you actually suggesting?","Ok I hear you — what exactly do you want me to do?","You've said that — so what are you proposing?"]);
+          } else {
+            reply=_pickMemory(POOLS.mini_hook_done,_S.lastReply);
+          }
+          hint=HINTS.mini_hook_done; hintKey="mini_hook_done";
+        // Anything else — nudge toward Ask
         } else {
           reply=_pickMemory(POOLS.mini_hook_done,_S.lastReply); hint=HINTS.mini_hook_done; hintKey="mini_hook_done";
         }
@@ -2369,6 +2551,13 @@ function _doTurn(raw){
       if(f.hasPitch||f.hasFear){
         reply=_pickNo(POOLS.s3_exit,_S.lastReply);
         if(_S.warmth<=20){_S.status="ended";_S.endReason="hardReject";ended=true;}
+      // Option B gate: Ask in phase 4 but no MAS-compliant ID
+      } else if(f.hasMeet && !_S.established.masId && !_S.doorComplianceFlag){
+        _S.doorComplianceFlag=true;
+        _S.warmth=Math.max(0,_S.warmth-10);
+        reply=_pick(POOLS.door_compliance_ask);
+        hint="Before you Ask — Ethan doesn't know who you are yet. State your name, company (Great Eastern), and that you're a financial representative — all in one line.";
+        hintKey="door_compliance";
       } else if(f.hasMeet&&f.hasTimebox&&f.hasTwoOptions){
         _S.closeHadTimebox=true; _S.closeHadTwoOptions=true; _S.closeHadReframe=f.hasReframe||false; _S.closeAttempted=true;
         var cr=_roll(_S.warmth,"perfect"); _S.status="ended"; _S.endReason=cr; ended=true;
@@ -2469,6 +2658,8 @@ async function _doTurnAsync(text){
 /* ── DEBRIEF BUILDER ── */
 function _buildDebrief(){
   var s=_S, er=s.endReason;
+  // Ensure doorComplianceFlag reflects any call where masId was never established
+  if(!s.established.masId && !s.doorComplianceFlag) s.doorComplianceFlag=true;
   var icon, label, sub, read, tip;
   if(er==="accept")               {icon="✅"; label="Appointment booked"; sub="Ethan agreed to meet.";}
   else if(er==="delay")           {icon="🟡"; label="Ethan asked for a follow-up"; sub="No confirmed time yet.";}
@@ -2480,6 +2671,8 @@ function _buildDebrief(){
 
   if(er==="repGaveUp"){ read="The call was going somewhere but was cut short before a booking. Ethan was still engaging — he just needed a cleaner close. When the prospect is asking follow-up questions, that's a buying signal, not a rejection."; tip="When a prospect keeps asking about timing and duration, they are interested — they just need a simple, direct answer and a specific ask. Next time, stay in the call a little longer and commit to a clear close."; }
   else if(s.pitchDetected||s.fearDetected){ read=DBF.reads.pitch; tip=DBF.tips.pitch; }
+  else if(s.misrepDetected){ read=DBF.reads.misrep; tip=DBF.tips.misrep; }
+  else if(s.doorComplianceFlag){ read=DBF.reads.door_compliance; tip=DBF.tips.door_compliance; }
   else if(er==="hardReject"&&s.earlyExitIgnored){ read=DBF.reads.early_exit; tip=DBF.tips.early_exit_ignored; }
   else if(er==="hardReject"&&(s.earlyExitMissed||s.earlyExitFired)){ read=DBF.reads.early_exit; tip=DBF.tips.early_exit_missed; }
   else if(er==="hardReject"&&s.lectureDetected){ read=DBF.reads.lectured; tip=DBF.tips.lectured; }
@@ -2488,7 +2681,7 @@ function _buildDebrief(){
   else if(s.lectureDetected&&er!=="accept"){ read=DBF.reads.lectured; tip=DBF.tips.lectured; }
   else if(s.earlyExitMissed&&er!=="accept"){ read=DBF.reads.early_exit; tip=DBF.tips.early_exit_missed; }
   else if(er==="delay"){ read=DBF.reads.whatsapp; tip=DBF.tips.whatsapp; }
-  else if(er==="softReject"){ read=DBF.reads.booked_bumpy; tip=DBF.tips.vague_close; }
+  else if(er==="softReject"){ read=DBF.reads.soft_reject; tip=DBF.tips.soft_reject; }
   else if(er==="accept"&&s.turn<=5){ read=DBF.reads.booked_clean; tip=DBF.tips.clean_call; }
   else if(er==="accept"){ read=DBF.reads.booked_bumpy; tip=DBF.tips.clean_call; }
   else{ read=DBF.reads.hard_end; tip=DBF.tips.hard_end; }
@@ -2513,7 +2706,7 @@ var Onboarding = (function(){
       label: 'Most calls go this way.',
       note:  "Ethan pushed back before the opener finished. The rep didn't argue — stopped him, re-earned the right with one insight, then asked for the session. Booked.",
       turns: [
-        { role:'rep',   moment:'door',     tag:'🚪 The Door',         text:'Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?' },
+        { role:'rep',   moment:'door',     tag:'🚪 The Door',         text:"Hi Ethan, Alvin here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is actually protected. Got 20 seconds?" },
         { role:'ethan', moment:null,       tag:null,                  text:'Not really interested.' },
         { role:'rep',   moment:'exit',     tag:'✋ The Exit — Move 1', text:'Before you go — just one thing.' },
         { role:'ethan', moment:null,       tag:null,                  text:'What one thing?' },
@@ -2527,7 +2720,7 @@ var Onboarding = (function(){
       label: "Sometimes Ethan gives you space. Use it.",
       note:  "Ethan didn't push back — he gave space. The rep used it with one observation and one question, then closed directly without needing The Exit.",
       turns: [
-        { role:'rep',   moment:'door', tag:'🚪 The Door',  text:'Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?' },
+        { role:'rep',   moment:'door', tag:'🚪 The Door',  text:"Hi Ethan, Alvin here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is actually protected. Got 20 seconds?" },
         { role:'ethan', moment:null,   tag:null,            text:'Uh, ok. What is it?' },
         { role:'rep',   moment:'hook', tag:'🎯 The Hook',  text:"Most people your age are earning well but spending everything they earn — no buffer if something changes. Is that something you've thought about?" },
         { role:'ethan', moment:null,   tag:null,            text:"I mean, kind of. My company covers me though." },
@@ -2539,7 +2732,7 @@ var Onboarding = (function(){
       label: "Sometimes The Ask is not enough. Stay calm and close again.",
       note:  "Ethan pushed back after The Ask with a WhatsApp request. The rep agreed without arguing, then immediately closed again with the same two options.",
       turns: [
-        { role:'rep',   moment:'door',  tag:'🚪 The Door',         text:'Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?' },
+        { role:'rep',   moment:'door',  tag:'🚪 The Door',         text:"Hi Ethan, Alvin here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is actually protected. Got 20 seconds?" },
         { role:'ethan', moment:null,    tag:null,                   text:'Not interested.' },
         { role:'rep',   moment:'exit',  tag:'✋ The Exit — Move 1', text:'Before you go — just one thing.' },
         { role:'ethan', moment:null,    tag:null,                   text:'Make it quick.' },
@@ -2942,7 +3135,15 @@ var UI = (function(){
           });
         });
       } else {
+        // Safety: if TTS callback never fires (iOS voice bug), unblock UI after 5s
+        var _ttsUnlockTimer = setTimeout(function(){
+          if(_S && _S.status === "active"){
+            document.getElementById("send-btn").disabled = false;
+            MicController.unblock();
+          }
+        }, 5000);
         VoiceRenderer.speakThen(result.reply, result.warmth, prospectBubble, function(){
+          clearTimeout(_ttsUnlockTimer);
           document.getElementById("send-btn").disabled = false;
           MicController.unblock();
           if(!MicController.isActive()){
@@ -2995,10 +3196,14 @@ var UI = (function(){
       var flags = {
         earlyExitIgnored: _S.earlyExitIgnored,
         earlyExitMissed: _S.earlyExitMissed,
+        earlyExitFired: _S.earlyExitFired || false,
         pitchDetected: _S.pitchDetected,
         lectureDetected: _S.lectureDetected,
         wrongLangCount: _S.wrongLangCount,
+        doorComplianceFlag: _S.doorComplianceFlag,
+        misrepDetected: _S.misrepDetected,
         turns: _S.turn,
+        phase: _S.phase,
         warmth: _S.warmth,
         warmthBand: _warmthBand(_S.warmth),
         closeHadTimebox: _S.closeHadTimebox || false,
@@ -3007,6 +3212,7 @@ var UI = (function(){
         closeHadSession: _S.closeHadSession || false,
         hadMiniHook: _S.miniHookFired || false,
         skippedMiniHook: _S.skippedMiniHook || false,
+        closeAttempted: _S.closeAttempted || false,
         offTopicWarningFired: _S.offTopicWarningFired || false,
         inappropriateExit: _S.inappropriateExitFired || false
       };
@@ -3019,75 +3225,72 @@ var UI = (function(){
         // Summary
         document.getElementById("debrief-summary").textContent = aiDebrief.summary || d.read;
 
-        // Strengths
-        if(aiDebrief.strengths && aiDebrief.strengths.length > 0){
-          var sl = document.getElementById("debrief-strengths");
-          sl.innerHTML = "";
-          aiDebrief.strengths.forEach(function(s){
-            var li = document.createElement("li");
-            li.textContent = s;
-            sl.appendChild(li);
-          });
-          document.getElementById("debrief-strengths-card").style.display = "block";
-        }
-
-        // Turn-by-turn moments
+        // 5-moment progressive cards
         var momentsEl = document.getElementById("debrief-moments");
         momentsEl.innerHTML = "";
-        if(aiDebrief.moments && aiDebrief.moments.length > 0){
-          aiDebrief.moments.forEach(function(m){
-            var card = document.createElement("div");
-            card.className = "moment-card";
 
-            var turn = document.createElement("div");
-            turn.className = "moment-turn";
-            turn.textContent = "You said: \"" + m.turn + "\"";
-            card.appendChild(turn);
+        var MOMENT_META = [
+          { key:"door",      label:"The Door",      color:"#1A6B8A" },
+          { key:"hook",      label:"The Hook",      color:"#2E7D52" },
+          { key:"exit",      label:"The Exit",      color:"#7C4D1E" },
+          { key:"mini_hook", label:"The Mini Hook", color:"#6B3FA0" },
+          { key:"ask",       label:"The Ask",       color:"#B83232" }
+        ];
 
-            var body = document.createElement("div");
-            body.className = "moment-body";
+        var reached = aiDebrief.reached || [];
+        var moments = aiDebrief.moments || {};
 
-            // Support both old (what_happened/impact) and new (issue) field names
-            var issueText = m.issue || [m.what_happened, m.impact].filter(Boolean).join(" — ");
-            if(issueText){
-              var r = document.createElement("div");
-              r.className = "moment-row";
-              var lbl = document.createElement("span");
-              lbl.className = "moment-label";
-              lbl.textContent = "What went wrong";
-              r.appendChild(lbl);
-              r.appendChild(document.createTextNode(issueText));
-              body.appendChild(r);
-            }
+        MOMENT_META.forEach(function(meta){
+          if(reached.indexOf(meta.key) === -1) return; // not reached — skip
+          var m = moments[meta.key];
+          if(!m) return;
 
-            if(m.better){
-              var better = document.createElement("div");
-              better.className = "moment-row moment-better";
-              var lbl2 = document.createElement("span");
-              lbl2.className = "moment-label";
-              lbl2.textContent = "Try instead";
-              better.appendChild(lbl2);
-              better.appendChild(document.createTextNode(m.better));
-              body.appendChild(better);
-            }
+          var verdict = m.verdict || "fail";
+          var verdictIcon = verdict === "pass" ? "✅" : verdict === "warn" ? "⚠️" : "❌";
+          var verdictColor = verdict === "pass" ? "#2E7D52" : verdict === "warn" ? "#B8860B" : "#B83232";
 
-            card.appendChild(body);
-            momentsEl.appendChild(card);
-          });
-        } else {
-          momentsEl.textContent = "No specific moments flagged.";
-        }
+          var card = document.createElement("div");
+          card.className = "moment-card";
+          card.style.cssText = "border-left:4px solid " + meta.color + ";margin-bottom:10px;padding:10px 12px;background:#F8F9FA;border-radius:0 6px 6px 0;";
 
-        // Improvements
-        if(aiDebrief.improvements && aiDebrief.improvements.length > 0){
-          var il = document.getElementById("debrief-improvements");
-          il.innerHTML = "";
-          aiDebrief.improvements.forEach(function(imp){
-            var li = document.createElement("li");
-            li.textContent = imp;
-            il.appendChild(li);
-          });
-          document.getElementById("debrief-improvements-card").style.display = "block";
+          // Header row: label + verdict
+          var hdr = document.createElement("div");
+          hdr.style.cssText = "display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;";
+          var lbl = document.createElement("span");
+          lbl.style.cssText = "font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:" + meta.color + ";";
+          lbl.textContent = meta.label;
+          var verd = document.createElement("span");
+          verd.style.cssText = "font-size:12px;font-weight:700;color:" + verdictColor + ";";
+          verd.textContent = verdictIcon + " " + verdict.toUpperCase();
+          hdr.appendChild(lbl);
+          hdr.appendChild(verd);
+          card.appendChild(hdr);
+
+          // Feedback
+          if(m.feedback){
+            var fb = document.createElement("div");
+            fb.style.cssText = "font-size:13px;color:#374151;line-height:1.5;margin-bottom:" + (m.better ? "6px" : "0") + ";";
+            fb.textContent = m.feedback;
+            card.appendChild(fb);
+          }
+
+          // Better line (only for warn/fail)
+          if(m.better){
+            var bt = document.createElement("div");
+            bt.style.cssText = "font-size:12px;color:#1A6B8A;background:#EBF8FF;border-radius:4px;padding:6px 8px;margin-top:4px;";
+            var btLbl = document.createElement("span");
+            btLbl.style.cssText = "font-weight:700;margin-right:4px;";
+            btLbl.textContent = "Try:";
+            bt.appendChild(btLbl);
+            bt.appendChild(document.createTextNode(m.better));
+            card.appendChild(bt);
+          }
+
+          momentsEl.appendChild(card);
+        });
+
+        if(momentsEl.children.length === 0){
+          momentsEl.textContent = "No moments reached — call ended too early.";
         }
 
         // Next call tip
@@ -3264,7 +3467,8 @@ var VoiceRenderer = (function(){
   var _selectedVoice = null;
   var _currentBubble = null;
   var _persona       = "ethan";
-  var _pendingSpeech = null;  // queued speech waiting for voices to load
+  var _pendingSpeech = null;         // queued speech waiting for voices to load
+  var _pendingSpeechTimeout = null;  // safety timeout if voiceschanged never fires
 
   // ── Debug hook (as per spec) ──────────────────────────────
   window.APPTCOACH_voiceDebug = {
@@ -3339,10 +3543,20 @@ var VoiceRenderer = (function(){
     // If voices not loaded yet, queue and wait for voiceschanged
     if(!_voicesLoaded){
       _pendingSpeech = {text:text, warmth:warmth, bubbleEl:bubbleEl, callback:callback};
+      // Safety: if voiceschanged never fires (iOS mid-session bug), force callback after 3s
+      if(!_pendingSpeechTimeout){
+        _pendingSpeechTimeout = setTimeout(function(){
+          _pendingSpeechTimeout = null;
+          if(_pendingSpeech){
+            var p = _pendingSpeech; _pendingSpeech = null;
+            if(p.callback) p.callback();
+          }
+        }, 3000);
+      }
       // Also try loading now — sometimes getVoices() is ready by the time speak is called
       var v = window.speechSynthesis.getVoices();
       if(v.length){ _loadVoice(); }
-      else { return; } // will be triggered by voiceschanged
+      else { return; } // will be triggered by voiceschanged or safety timeout above
     }
     // If voices just loaded in the line above, proceed
     if(!_voicesLoaded){
@@ -3443,6 +3657,8 @@ var VoiceRenderer = (function(){
       tryLoad();
       window.speechSynthesis.addEventListener("voiceschanged", function(){
         _loadVoice();
+        // Clear safety timeout — we got voices, no need to force-fire callback
+        if(_pendingSpeechTimeout){ clearTimeout(_pendingSpeechTimeout); _pendingSpeechTimeout = null; }
         // If a voice wasn't selected yet when first speech tried to fire, retry
         if(_pendingSpeech){
           var p = _pendingSpeech; _pendingSpeech = null;
@@ -3906,7 +4122,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <div class="moments-row-body">
       <div class="moments-row-name">The Door <span style="font-size:10px;font-weight:700;color:var(--muted)">every call</span></div>
       <div class="moments-row-rule">Name · company · one reason · ask for 20 seconds. One breath.</div>
-      <div class="moments-row-example moments-door-ex">"Hi Ethan, Alvin from Great Eastern — I help people your age make sure their income is actually working for them. Got 20 seconds?"</div>
+      <div class="moments-row-example moments-door-ex">"Hi Ethan, Alvin here — I'm a financial representative from Great Eastern. I help people who just started working make sure their income is actually protected. Got 20 seconds?"</div>
     </div>
   </div>
   <div class="moments-row">
