@@ -656,6 +656,7 @@
       <div class="ob-dot" id="ob-dot-1"></div>
       <div class="ob-dot" id="ob-dot-2"></div>
       <div class="ob-dot" id="ob-dot-3"></div>
+      <div class="ob-dot" id="ob-dot-4"></div>
     </div>
 
     <!-- Card 0: The Door -->
@@ -686,29 +687,37 @@
     <div class="ob-moment-card" id="ob-card-2">
       <div class="ob-moment-icon ob-exit">✋</div>
       <div class="ob-moment-name">The Exit</div>
-      <div class="ob-moment-tag-label">Almost every call</div>
-      <div class="ob-moment-desc">He pushes back. Two moves — not one.<br><br><strong>First:</strong> Ask for one moment. Stop. Let him ask what it is.<br><strong>Then:</strong> Give one insight about people in his situation. Re-earn the right — then ask.</div>
+      <div class="ob-moment-tag-label">Almost every call — Move 1</div>
+      <div class="ob-moment-desc">He pushes back right after the Door. Don't explain. Don't pitch. Ask for just one moment and stop talking. Let him ask what it is.</div>
       <div class="ob-example-wrap ob-example-exit">
-        <div class="ob-example-label">Move 1 — stop him</div>
+        <div class="ob-example-label">Say exactly this</div>
         <div class="ob-example-text">"Before you go — just one thing."</div>
-        <div class="ob-example-note">Then stop. Wait for him to ask what it is.</div>
-      </div>
-      <div class="ob-example-wrap ob-example-exit" style="margin-top:8px">
-        <div class="ob-example-label">Move 2 — re-earn it</div>
-        <div class="ob-example-text">"Most people in your situation haven't actually checked if this gap affects them — that's usually what makes it worth a look."</div>
-        <div class="ob-example-note">Now you've earned the Ask.</div>
+        <div class="ob-example-note">Then stop. Silence. Wait for him to ask "What one thing?"</div>
       </div>
     </div>
 
-    <!-- Card 3: The Ask -->
+    <!-- Card 3: The Mini Hook -->
     <div class="ob-moment-card" id="ob-card-3">
+      <div class="ob-moment-icon ob-exit" style="background:#6B3FA0">💡</div>
+      <div class="ob-moment-name">The Mini Hook</div>
+      <div class="ob-moment-tag-label">Almost every call — Move 2</div>
+      <div class="ob-moment-desc">He asked "What one thing?" Now you have one sentence to make it worth his time. One specific insight about people in his situation. Not the Ask yet — re-earn the right first.</div>
+      <div class="ob-example-wrap ob-example-exit">
+        <div class="ob-example-label">Try this</div>
+        <div class="ob-example-text">"Most people your age haven't checked if their company insurance covers them if they can't work — it usually doesn't once you leave. That's usually why it's worth a look."</div>
+        <div class="ob-example-note">Now ask for the session.</div>
+      </div>
+    </div>
+
+    <!-- Card 4: The Ask -->
+    <div class="ob-moment-card" id="ob-card-4">
       <div class="ob-moment-icon ob-ask">📅</div>
       <div class="ob-moment-name">The Ask</div>
       <div class="ob-moment-tag-label">Every call — sometimes twice</div>
-      <div class="ob-moment-desc">No commitment, name the session, two specific times. All in one breath. If he pushes back again — agree, then close with the same two options.</div>
+      <div class="ob-moment-desc">No commitment, name the session, how long, two specific times. All in one breath. If he pushes back again — agree, then close with the same two options.</div>
       <div class="ob-example-wrap ob-example-ask">
         <div class="ob-example-label">Try this</div>
-        <div class="ob-example-text">"Nothing to commit to — just a quick review of your current situation. Tuesday 8pm or Saturday morning?"</div>
+        <div class="ob-example-text">"Nothing to commit to — just a quick review of your current situation. About 20 minutes. Tuesday 8pm or Saturday morning?"</div>
       </div>
     </div>
 
@@ -2447,6 +2456,12 @@ function _doTurn(raw){
           }
           hint=HINTS.mini_hook_done; hintKey="mini_hook_done";
         // Anything else — nudge toward Ask
+        // Special case: rep is explaining session content (answering Ethan's "what does it entail")
+        // instead of closing — give targeted redirect
+        } else if((f.hasMicroReason||f.hasReason) && !f.hasMeet){
+          reply=_pickMemory(POOLS.mini_hook_done,_S.lastReply);
+          hint="Good — you answered his question. Now close it. Add two time options in the same sentence: \"Nothing to commit to — just a quick review of your current situation. About 20 minutes. Tuesday 8pm or Saturday morning?\"";
+          hintKey="s3_noask";
         } else {
           reply=_pickMemory(POOLS.mini_hook_done,_S.lastReply); hint=HINTS.mini_hook_done; hintKey="mini_hook_done";
         }
@@ -2754,7 +2769,7 @@ var Onboarding = (function(){
     var backBtn = document.getElementById('ob-back-btn');
     if(backBtn) backBtn.style.display = idx===0 ? 'none' : '';
     var nextBtn = document.getElementById('ob-next-btn');
-    if(nextBtn) nextBtn.textContent = idx===3 ? 'See examples →' : 'Next →';
+    if(nextBtn) nextBtn.textContent = idx===4 ? 'See examples →' : 'Next →';
   }
 
   function _loadScenario(idx){
@@ -2858,7 +2873,7 @@ var Onboarding = (function(){
         _step = 0;
         _showMomentCard(0);
       } else if(id === 'screen-onboard-moments'){
-        if(_step < 3){
+        if(_step < 4){
           _step++;
           _showMomentCard(_step);
         } else {
