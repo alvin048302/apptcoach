@@ -1520,7 +1520,7 @@ var TIPS_CONTENT = {
   },
   modes: {
     title: "Practice modes",
-    body:  "FOUNDATION\nCoaching hints appear after each of the prospect's replies. The hint tells you what to do next based on what they just said. Tap the ? for more detail on why it matters and what to avoid.\n\nADVANCED\nNo hints during the call. You handle each situation on your own. Use this when you want to test yourself under realistic conditions.\n\nBoth modes have the same debrief at the end."
+    body:  "FOUNDATION\nCoaching hints appear after each of the prospect's replies. The hint tells you what to do next based on what they just said. Tap the ? for more detail on why it matters and what to avoid.\n\nADVANCED\nNo hints during the call. You handle each situation on your own. Ethan will get impatient if you take too long to respond — silence drains his patience and he will eventually hang up. Use this when you want to test yourself under realistic conditions.\n\nBoth modes have the same debrief at the end."
   }
 };
 
@@ -2935,6 +2935,50 @@ var UI = (function(){
     return bub;  // returned so voice can animate the bubble
   }
 
+  // ── Silence timer (Advanced mode only) ─────────────────────────
+  var _silenceTimer   = null;
+  var _silenceOffence = 0;
+  var _SILENCE_T1 = 15000;
+  var _SILENCE_T2 = 10000;
+  var _SILENCE_T3 = 8000;
+  var _SILENCE_POOLS = [
+    ["Hello? You still there?","You there?","…you going to say something?","Still there?"],
+    ["Look, I don't have all day.","I'm losing you here.","I really have to go soon.","Are you still on the line?"],
+    ["Ok I'm going to hang up now.","I really have to go. Bye.","Sorry — I can't wait any longer. Bye."]
+  ];
+
+  function _clearSilenceTimer(){
+    if(_silenceTimer){ clearTimeout(_silenceTimer); _silenceTimer=null; }
+  }
+
+  function _startSilenceTimer(){
+    _clearSilenceTimer();
+    if(_mode !== "advanced" || !_S || _S.status !== "active") return;
+    var delay = _silenceOffence===0 ? _SILENCE_T1 : _silenceOffence===1 ? _SILENCE_T2 : _SILENCE_T3;
+    _silenceTimer = setTimeout(function(){
+      _silenceTimer = null;
+      if(!_S || _S.status !== "active") return;
+      var pool = _SILENCE_POOLS[Math.min(_silenceOffence, _SILENCE_POOLS.length-1)];
+      var msg  = pool[Math.floor(Math.random()*pool.length)];
+      if(_silenceOffence >= 2){
+        _S.warmth = 0; _S.status = "ended"; _S.endReason = "hardReject";
+        _addBubble("prospect", msg);
+        MicController.deactivate();
+        document.getElementById("send-btn").disabled = true;
+        VoiceRenderer.speakThen(msg, 0, null, function(){
+          CallingTone.endCall(function(){ setTimeout(function(){ UI.showResult(); }, 400); });
+        });
+      } else {
+        _silenceOffence++;
+        _S.warmth = Math.max(0, _S.warmth - (_silenceOffence===1 ? 8 : 15));
+        _addBubble("prospect", msg);
+        VoiceRenderer.speak(msg, _S.warmth);
+        _startSilenceTimer();
+      }
+    }, delay);
+  }
+  // ───────────────────────────────────────────────────────────────
+
   var _currentHintKey = "s1_weak"; // tracks which coaching card to show
 
   function _setHint(text, isCrit, hintKey){
@@ -2983,7 +3027,7 @@ var UI = (function(){
       document.getElementById("seg-advanced").classList.toggle("active", m==="advanced");
       document.getElementById("mode-helper").textContent = m==="foundation"
         ? "Coaching hints shown after each reply. Best for learning how to handle each situation."
-        : "No hints during the call. Handle each situation on your own.";
+        : "No hints during the call. Handle each situation on your own. Ethan gets impatient if you take too long — silence drains his patience.";
     },
 
     goToBrief: function(){
@@ -3047,6 +3091,8 @@ var UI = (function(){
       MicController.deactivate();
       VoiceRenderer.stop();
       UI.closeCoachingCard();
+      _clearSilenceTimer();
+      _silenceOffence = 0;
 
       // IMPORTANT: Unlock speechSynthesis NOW while we're inside the user gesture (button tap).
       // Mobile browsers (iOS/Android) block TTS that fires outside a direct user interaction.
@@ -3098,6 +3144,7 @@ var UI = (function(){
       var inp  = document.getElementById("msg-input");
       var text = inp.value.trim();
       if(!text || !_S || _S.status!=="active") return;
+      _clearSilenceTimer(); // rep spoke — cancel any pending silence penalty
       inp.value = ""; inp.style.height = "auto";
       inp.classList.remove("mic-interim");
       document.getElementById("send-btn").disabled = true;
@@ -3164,6 +3211,8 @@ var UI = (function(){
           if(!MicController.isActive()){
             document.getElementById("msg-input").focus();
           }
+          // Advanced mode: start silence timer — rep's turn begins now
+          _startSilenceTimer();
         });
       }
     },
@@ -3322,6 +3371,8 @@ var UI = (function(){
     },
 
     retrySession: function(){
+      _clearSilenceTimer();
+      _silenceOffence = 0;
       _show("screen-brief");
     },
 
